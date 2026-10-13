@@ -22,7 +22,7 @@ jobs:
       - name: Reassemble candidate ZIP and check SHA-256
         run: |
           cat validation/payload_*.b64 | base64 --decode > /tmp/runload-g2-payload.zip
-          echo '73aab299f2e0c28281d628531db5c7087f3cbd2d92cdb564b04e784da7776d75  /tmp/runload-g2-payload.zip' | sha256sum --check -
+          echo '8d2ef8d1b280cab312c0948add1638c6329f924543b66d66612c04cec6fa0015  /tmp/runload-g2-payload.zip' | sha256sum --check -
           mkdir -p candidate
           unzip -q /tmp/runload-g2-payload.zip -d candidate
           test -f candidate/index.html
@@ -141,6 +141,12 @@ jobs:
           RUNLOAD_TEST_URL: http://127.0.0.1:4173
           GITHUB_SHA: ${{ github.sha }}
         run: node tests/g2-history-over80-browser.mjs
+      - name: Confirm corrupted result isolation and non-leakage on genuine Chromium IndexedDB
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          GITHUB_SHA: ${{ github.sha }}
+        run: node tests/g2-corrupt-result-native-browser.mjs
       - name: Validate scientific exception contracts EX01 to EX21
         working-directory: candidate
         run: |
@@ -167,6 +173,7 @@ jobs:
             candidate/audit/g2_last_gate_actions.json
             candidate/audit/g2_calendar_history_native.json
             candidate/audit/g2_history_over80_native.json
+            candidate/audit/g2_corrupt_result_native.json
             candidate/audit/test_runner_result.json
             candidate/audit/test_runner_tap.txt
             candidate/audit/real_deep_acceptance_actions.json
