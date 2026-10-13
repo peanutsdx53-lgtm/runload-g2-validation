@@ -69,6 +69,14 @@ jobs:
         run: |
           cp ../tests/g2-remaining-native-boundaries.mjs tests/g2-remaining-native-boundaries.mjs
           node tests/g2-remaining-native-boundaries.mjs
+      - name: Verify actual Chromium process restart and cross-origin data isolation
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          G2_DB01_DB09_REPORT: audit/g2_final_native_restart_isolation.json
+        run: |
+          cp ../tests/g2-final-native-restart-isolation.mjs tests/g2-final-native-restart-isolation.mjs
+          node tests/g2-final-native-restart-isolation.mjs
       - name: Run full two-record browser acceptance on actual IndexedDB
         working-directory: candidate
         env:
@@ -189,6 +197,7 @@ jobs:
           path: |
             candidate/audit/real_indexeddb_actions.json
             candidate/audit/g2_remaining_native_actions.json
+            candidate/audit/g2_final_native_restart_isolation.json
             candidate/audit/g1_direct_branch_evidence_actions.json
             candidate/audit/g1_remaining_branch_evidence_actions.json
             candidate/audit/g1_time_axis_browser_actions.json
