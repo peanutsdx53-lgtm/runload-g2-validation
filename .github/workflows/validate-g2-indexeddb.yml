@@ -36,6 +36,9 @@ jobs:
       - name: Apply scoped G1 surface, history and module boundary patch
         run: |
           base64 --decode validation/g2-v029-delta.patch.gz.b64 | gzip --decompress | patch -p1 -d candidate
+      - name: Apply pre-UI observed-body and inline validation fixes
+        run: |
+          base64 --decode validation/g2-v030-delta.patch.gz.b64 | gzip --decompress | patch -p1 -d candidate
       - name: Run existing Node.js regression suite
         working-directory: candidate
         run: |
@@ -93,6 +96,14 @@ jobs:
         run: |
           cp ../tests/g2-exception-acceptance.mjs tests/g2-exception-acceptance.mjs
           node tests/g2-exception-acceptance.mjs
+      - name: Test outstanding G1 UI flow and technical reflow in native Chromium
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          G2_FINAL43_BROWSER_REPORT: audit/g2_final43_technical_browser.json
+        run: |
+          cp ../tests/g2-final-preui-browser.mjs tests/g2-final-preui-browser.mjs
+          node tests/g2-final-preui-browser.mjs
       - name: Verify all twelve G1 consultation sharing scenarios
         working-directory: candidate
         env:
@@ -198,6 +209,7 @@ jobs:
             candidate/audit/real_indexeddb_actions.json
             candidate/audit/g2_remaining_native_actions.json
             candidate/audit/g2_final_native_restart_isolation.json
+            candidate/audit/g2_final43_technical_browser.json
             candidate/audit/g1_direct_branch_evidence_actions.json
             candidate/audit/g1_remaining_branch_evidence_actions.json
             candidate/audit/g1_time_axis_browser_actions.json
