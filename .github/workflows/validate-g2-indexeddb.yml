@@ -50,6 +50,14 @@ jobs:
           RUNLOAD_TEST_URL: http://127.0.0.1:4173
           RUNLOAD_TEST_REPORT: audit/real_indexeddb_actions.json
         run: node tests/real-indexeddb-browser.mjs
+      - name: Run full two-record browser acceptance on actual IndexedDB
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          RUNLOAD_DEEP_REPORT: audit/real_deep_acceptance_actions.json
+        run: |
+          cp ../tests/g2-deep-browser-acceptance.mjs tests/g2-deep-browser-acceptance.mjs
+          node tests/g2-deep-browser-acceptance.mjs
       - name: Upload reports, including failures
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,6 +65,7 @@ jobs:
           name: runload-g2-indexeddb-evidence
           path: |
             candidate/audit/real_indexeddb_actions.json
+            candidate/audit/real_deep_acceptance_actions.json
             candidate/audit/frozen_reference_hashes.json
             /tmp/runload-g2-server.log
           if-no-files-found: warn
