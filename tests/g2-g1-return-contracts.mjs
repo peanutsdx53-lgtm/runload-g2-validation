@@ -38,9 +38,14 @@ async function seed(page,mix='run'){
  await h(page).filter({hasText:'結果'}).waitFor();
 }
 async function nav(page,id){
- const main=page.locator(`.sidebar [data-action="navigate"][data-id="${id}"]`);
- await main.click();
- await page.locator(`.sidebar [data-id="${id}"][aria-current="page"]`).waitFor();
+ if(['S10','S14'].includes(id)){
+  await page.locator('.footer-nav [data-action="open-more"]').click();
+  await page.locator(`#more-navigation [data-action="navigate"][data-id="${id}"]`).click();
+ }else{
+  await page.locator(`.footer-nav [data-action="navigate"][data-id="${id}"]`).click();
+ }
+ const title={'S01':'ホーム','S02':'記録','S05':'結果','S07':'履歴','S10':'振り返り','S14':'データ管理'}[id];
+ await h(page).filter({hasText:title}).waitFor();
 }
 async function region(page){await page.locator('[data-action="open-region"]').first().click();await page.locator('#modal-title').filter({hasText:'部位の詳細'}).waitFor();}
 async function close(page){await page.locator('[data-action="close-modal"]').first().click()}
