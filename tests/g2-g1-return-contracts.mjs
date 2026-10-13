@@ -61,7 +61,7 @@ try{
  });
  await run('F07','Source and reference explanation nested in S06 returns to S06',async page=>{
   await seed(page); await region(page);
-  await page.locator('[data-action="open-column"]').first().click();await modal(page,'参考情報の説明');
+  await page.locator('.modal [data-action="open-column"]').first().click();await modal(page,'参考情報の説明');
   await close(page);await modal(page,'部位の詳細');
   return {from:'S06',nested:'S08',restored:'S06'};
  });
@@ -72,7 +72,7 @@ try{
  });
  await run('F11','Article explanation returns to selected region and original record without changing selection',async page=>{
   await seed(page);const before=await page.locator('.screen-header small').textContent();
-  await region(page);await page.locator('[data-action="open-column"]').first().click();await modal(page,'参考情報の説明');
+  await region(page);await page.locator('.modal [data-action="open-column"]').first().click();await modal(page,'参考情報の説明');
   await close(page);await modal(page,'部位の詳細');await close(page);
   assert.equal(await page.locator('[role="dialog"]').count(),0);
   assert.equal(await page.locator('.screen-header small').textContent(),before);
@@ -80,7 +80,7 @@ try{
  });
  await run('F12','Virtual speed comparison closes to S06 then S05',async page=>{
   await seed(page);await region(page);
-  await page.locator('[data-action="open-simulation"]').click();await modal(page,'仮想速度の比較');
+  await page.locator('.modal [data-action="open-simulation"]').click();await modal(page,'仮想速度の比較');
   await close(page);await modal(page,'部位の詳細');await close(page);
   assert.equal(await page.locator('[role="dialog"]').count(),0);
   await h(page).filter({hasText:'結果'}).waitFor();
@@ -119,7 +119,7 @@ try{
   await page.locator('[data-action="open-help"]').click();await modal(page,'利用方法と用語');
   assert.match(await page.locator('.modal-body').textContent(),/A1.*A2.*B/);
   await close(page);await h(page).filter({hasText:'ホーム'}).waitFor();
-  await seed(page);await region(page);await page.locator('[data-action="open-column"]').first().click();await modal(page,'参考情報の説明');
+  await seed(page);await region(page);await page.locator('.modal [data-action="open-column"]').first().click();await modal(page,'参考情報の説明');
   await close(page);await modal(page,'部位の詳細');await close(page);await h(page).filter({hasText:'結果'}).waitFor();
   return {terminology:'S16',sourceExplanation:'S08',return:['S01','S06','S05']};
  });
