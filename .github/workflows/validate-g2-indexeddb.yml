@@ -58,6 +58,14 @@ jobs:
         run: |
           cp ../tests/g2-deep-browser-acceptance.mjs tests/g2-deep-browser-acceptance.mjs
           node tests/g2-deep-browser-acceptance.mjs
+      - name: Exercise remaining real-browser storage failure boundaries
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          RUNLOAD_EXCEPTION_REPORT: audit/real_exception_acceptance_actions.json
+        run: |
+          cp ../tests/g2-exception-acceptance.mjs tests/g2-exception-acceptance.mjs
+          node tests/g2-exception-acceptance.mjs
       - name: Upload reports, including failures
         if: always()
         uses: actions/upload-artifact@v4
@@ -66,6 +74,7 @@ jobs:
           path: |
             candidate/audit/real_indexeddb_actions.json
             candidate/audit/real_deep_acceptance_actions.json
+            candidate/audit/real_exception_acceptance_actions.json
             candidate/audit/frozen_reference_hashes.json
             /tmp/runload-g2-server.log
           if-no-files-found: warn
