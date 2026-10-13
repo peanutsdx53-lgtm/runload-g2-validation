@@ -22,7 +22,7 @@ jobs:
       - name: Reassemble candidate ZIP and check SHA-256
         run: |
           cat validation/payload_*.b64 | base64 --decode > /tmp/runload-g2-payload.zip
-          echo '8d2ef8d1b280cab312c0948add1638c6329f924543b66d66612c04cec6fa0015  /tmp/runload-g2-payload.zip' | sha256sum --check -
+          echo 'a8db534ec36dc6b842247aba21a139305aeeeaaa76031979280fb587ada30e6d  /tmp/runload-g2-payload.zip' | sha256sum --check -
           mkdir -p candidate
           unzip -q /tmp/runload-g2-payload.zip -d candidate
           test -f candidate/index.html
