@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 const base=process.env.RUNLOAD_TEST_URL??'http://127.0.0.1:4173';
 let browser,failure;const checks=[];
 async function check(id,title,fn){try{const detail=await fn();checks.push({id,status:'PASS',title,detail});console.log('PASS '+id+' '+title)}catch(e){checks.push({id,status:'FAIL',title,reason:String(e.message??e)});throw e}}
-const validDraft=date=>({recordDate:date,distanceKm:6,durationSeconds:2100,runningMix:'run',speedPattern:'stable',elapsedTimeBasis:'moving',distanceConfidence:'known',recordSource:'manual'});
+const validDraft=date=>({recordDate:date,distanceKm:6,durationSeconds:2100,runningMix:'run',speedPattern:'stable',elapsedTimeBasis:'moving',distanceConfidence:'measured',recordSource:'manual'});
 async function page(ctx){const p=await ctx.newPage();const response=await p.goto(base+'/index.html',{waitUntil:'domcontentloaded'});assert.equal(response.status(),200);await p.locator('#main-content').waitFor();return p}
 try{
 browser=await chromium.launch();
@@ -23,7 +23,7 @@ await check('G1-E2E02','Save failure preserves draft and retry saves exactly one
    const afterRetry=await readAll(w.db,['records','recordRevisions','resultSnapshots']);
    return {failureStatus:failure.status,preserved,before:[afterError.records.length,afterError.recordRevisions.length,afterError.resultSnapshots.length],after:[afterRetry.records.length,afterRetry.recordRevisions.length,afterRetry.resultSnapshots.length],retryStatus:retry.status,revision:afterRetry.records[0]?.revision};
  },validDraft('2026-10-11'));
- console.log('DEBUG_E2E02',JSON.stringify(result));assert.equal(result.preserved,true);assert.deepEqual(result.before,[0,0,0]);assert.deepEqual(result.after,[1,1,1]);assert.equal(result.retryStatus,'saved');assert.equal(result.revision,1);
+assert.equal(result.preserved,true);assert.deepEqual(result.before,[0,0,0]);assert.deepEqual(result.after,[1,1,1]);assert.equal(result.retryStatus,'saved');assert.equal(result.revision,1);
  return result;
  }finally{await ctx.close()}
 });
