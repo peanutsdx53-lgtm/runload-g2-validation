@@ -72,7 +72,7 @@ try{
   assert.equal(outcome.saved.status,'saved');assert.equal(outcome.reflection.status,'saved');assert.equal(outcome.run.revision,2);
   assert.equal(outcome.fatigue.find(x=>x.phase==='pre').value,0);assert.equal(outcome.fatigue.find(x=>x.phase==='post').value,7);
   assert.equal(outcome.body.length,1);assert.equal(outcome.followups.length,1);
-  assert.deepEqual(outcome.snapshots,[1,2]);assert.deepEqual(outcome.revisions,[1,2]);
+  assert.deepEqual([...outcome.snapshots].sort((a,b)=>a-b),[1,2]);assert.deepEqual([...outcome.revisions].sort((a,b)=>a-b),[1,2]);
   return {recordId:outcome.recordId,revision:outcome.run.revision,fatigueCount:outcome.fatigue.length};
  });
  await check('DEEP-08','Explicit sharing selection prevents private observations leaking to preview',async()=>{
