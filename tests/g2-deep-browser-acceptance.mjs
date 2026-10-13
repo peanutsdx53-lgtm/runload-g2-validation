@@ -29,7 +29,7 @@ try{
  });
  await check('DEEP-03','Real mobile UI writes first saved run and genuine reference snapshot',async()=>{
   await mobile.locator('#field-distanceKm').fill('6');
-  await mobile.locator('details summary').click();
+  await mobile.locator('details summary').first().click();
   await mobile.locator('#field-runningMix').selectOption('run');
   await mobile.locator('#field-speedPattern').selectOption('stable');
   await mobile.locator('#field-elapsedTimeBasis').selectOption('moving');
