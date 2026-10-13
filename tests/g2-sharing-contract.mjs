@@ -29,7 +29,7 @@ try{
  });
  await check('SH03','Body observation share omits unselected PRE and POST fatigue values',async()=>{
   const result=await page.evaluate(()=>{
-   const w=window.g2ShareWork;w.shareSelection={'observation_'+w.active.bodyObservations[0].observationId:true};
+   const w=window.g2ShareWork;w.shareSelection={['observation_'+w.active.bodyObservations[0].observationId]:true};
    return w.generatePreview(false).text;
   });
   assert.match(result,/KEEP_PRIVATE/);assert.doesNotMatch(result,/ROF-J|PRIVATE_FOLLOWUP/);return {unselectedFatigueExcluded:true};
@@ -98,7 +98,7 @@ try{
  await check('SH11','HTML-shaped user text is printed as literal text rather than executed DOM',async()=>{
   const result=await page.evaluate(async()=>{
    const {render}=await import('/js/ui/views.js');const w=window.g2ShareWork;w.closeModal();
-   w.shareSelection={'observation_'+w.active.bodyObservations[0].observationId:true};w.generatePreview(true);w.openModal('S13');render(w);
+   w.shareSelection={['observation_'+w.active.bodyObservations[0].observationId]:true};w.generatePreview(true);w.openModal('S13');render(w);
    return {literal:document.body.textContent.includes('<img src=x onerror=window.XSS=1>'),images:[...document.querySelectorAll('img')].filter(x=>x.getAttribute('src')==='x').length,executed:window.XSS===1};
   });
   assert.equal(result.literal,true);assert.equal(result.images,0);assert.equal(result.executed,false);return result;
