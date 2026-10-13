@@ -80,6 +80,13 @@ jobs:
         run: |
           cp ../tests/g2-column-contract.mjs tests/g2-column-contract.mjs
           node tests/g2-column-contract.mjs
+      - name: Complete residual three G1 technical end-to-end scenarios
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+        run: |
+          cp ../tests/g2-g1-e2e-residual.mjs tests/g2-g1-e2e-residual.mjs
+          node tests/g2-g1-e2e-residual.mjs
       - name: Upload reports, including failures
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,6 +98,7 @@ jobs:
             candidate/audit/real_exception_acceptance_actions.json
             candidate/audit/real_sharing_contract_actions.json
             candidate/audit/real_column_contract_actions.json
+            candidate/audit/g1_e2e_preui_actions.json
             candidate/audit/frozen_reference_hashes.json
             /tmp/runload-g2-server.log
           if-no-files-found: warn
