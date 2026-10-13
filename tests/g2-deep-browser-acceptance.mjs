@@ -151,6 +151,7 @@ try{
   assert.match(preview,/走行日/);
   assert.doesNotMatch(preview,/DEEP_PRIVATE_REFLECTION_9x/);
   await page.locator('[data-action="copy-share"]').click();
+  await page.getByText('コピー操作を実行しました。').waitFor({timeout:10000});
   const copied=await page.evaluate(()=>navigator.clipboard.readText());
   assert.equal(copied,preview);
   return {clipboardBytes:Buffer.byteLength(copied),unselectedExcluded:true};
