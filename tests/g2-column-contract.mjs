@@ -119,9 +119,19 @@ try{
   await check(id,'Editorial '+id+' matches declared unique interpretation reason code',async()=>{
    const r=await page.evaluate(async(id)=>{
     const {COLUMNS}=await import('/js/research/source-catalog.js');const {selectColumn}=await import('/js/domain/column.js');
-    const col=COLUMNS.find(x=>x.id===id),rule=col.rules[0];
-    const candidate=selectColumn([{messageCode:rule,dataKind:'reference',evidenceIds:['R01']}]);
-    return {wanted:id,returned:candidate?.id??null,source:col.source,rule};
+    const col=COLUMNS.find(x=>x.id===id);
+    const {RESEARCH_CATALOG}=await import('/js/research/anchor-data.js');
+    const study=RESEARCH_CATALOG.find(x=>x.regionId==='R02');
+    const valid={
+     COL01:{messageCode:'I06',dataKind:'fact',evidenceIds:[]},
+     COL02:{messageCode:'I07',dataKind:'reference',evidenceIds:['R01','PREVIOUS']},
+     COL03:{messageCode:'I14',dataKind:'subjective',evidenceIds:[]},
+     COL04:{messageCode:'I03',dataKind:'reference',evidenceIds:[study.sourceId,'R02']},
+     COL05:{messageCode:'I11',dataKind:'fact',evidenceIds:[]},
+     COL06:{messageCode:'I20',dataKind:'fact',evidenceIds:['CURRENT']}
+    };
+    const candidate=selectColumn([valid[id]],id==='COL04'?'R02':'R01');
+    return {wanted:id,returned:candidate?.id??null,source:col.source,rule:valid[id].messageCode};
    },id);assert.equal(r.returned,id);return r;
   });
  }
