@@ -162,5 +162,33 @@ try {
    assert.equal(r.ok,false);assert.match(r.message,/印刷/);return r;
   }finally{await ctx.close()}
  });
+ await check('EDGE-11','Restore rejects same-ID edit that occurs after preview and preserves newer revision',async()=>{
+  const ctx=await browser.newContext();try{
+   const page=await open(ctx);const r=await page.evaluate(async()=>{
+    const {Workflow}=await import('/js/app/workflow.js');
+    const {createBackup,inspectBackup,previewRestore,restoreBackup}=await import('/js/storage/interchange.js');
+    const {readAll}=await import('/js/storage/database.js');
+    const w=new Workflow();await w.init();w.resetDraft();
+    w.draft={...w.draft,recordDate:'2026-10-11',distanceKm:5,durationSeconds:1800,runningMix:'run',speedPattern:'stable',elapsedTimeBasis:'moving'};
+    const initial=await w.saveCurrent();if(initial.status!=='saved')throw Error('initial save failed');
+    const backup=await inspectBackup(await createBackup(w.db));
+    await previewRestore(w.db,backup);
+    w.draft={...w.active.run,reflection:'TEST_ONLY_UPDATED_AFTER_BACKUP_PREVIEW'};
+    const changed=await w.saveCurrent();
+    let rejected=false;try{await restoreBackup(w.db,backup)}catch{rejected=true}
+    const after=await readAll(w.db,['records','recordRevisions']);
+    return {changed:changed.status,rejected,revision:after.records[0]?.revision,reflection:after.records[0]?.reflection,history:after.recordRevisions.length}
+   });
+   assert.equal(r.changed,'saved');assert.equal(r.rejected,true);assert.equal(r.revision,2);assert.equal(r.reflection,'TEST_ONLY_UPDATED_AFTER_BACKUP_PREVIEW');assert.equal(r.history,2);return {rejected:true,preservedRevision:2};
+  }finally{await ctx.close()}
+ });
+ await check('EDGE-12','Storage screen explicitly warns of eviction and unencrypted backups',async()=>{
+  const ctx=await browser.newContext();try{
+   const page=await open(ctx);await page.locator('[data-action="navigate"][data-id="S14"]:visible').first().click();
+   const text=await page.locator('#main-content').textContent();
+   assert.match(text,/自動同期はありません/);assert.match(text,/失われる場合があります/);assert.match(text,/暗号化されていません/);
+   assert.doesNotMatch(text,/絶対に消えません|必ず保存されます/);return {dataLossWarning:true,plaintextWarning:true};
+  }finally{await ctx.close()}
+ });
  }catch(e){failure={message:String(e?.message??e),stack:String(e?.stack??'').slice(0,1800)};console.error(e)}
- finally{await browser?.close().catch(()=>{});const report={schema:'RunLoad-G2-Exception-Acceptance-V1',environment:'Ubuntu-GitHubActions-Chromium',timestamp:new Date().toISOString(),checks,failure};await fs.mkdir('audit',{recursive:true});await fs.writeFile(reportPath,JSON.stringify(report,null,2)+'\n');console.log('Exception acceptance:',checks.filter(x=>x.status==='PASS').length+'/'+checks.length,'PASS');if(failure||checks.length!==10)process.exitCode=1}
+ finally{await browser?.close().catch(()=>{});const report={schema:'RunLoad-G2-Exception-Acceptance-V1',environment:'Ubuntu-GitHubActions-Chromium',timestamp:new Date().toISOString(),checks,failure};await fs.mkdir('audit',{recursive:true});await fs.writeFile(reportPath,JSON.stringify(report,null,2)+'\n');console.log('Exception acceptance:',checks.filter(x=>x.status==='PASS').length+'/'+checks.length,'PASS');if(failure||checks.length!==12)process.exitCode=1}
