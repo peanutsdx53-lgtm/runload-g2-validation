@@ -147,7 +147,7 @@ try {
  await check('EDGE-09','Six explanatory columns are versioned, sourced and neutral without medical claims',async()=>{
   const ctx=await browser.newContext();try{
    const page=await open(ctx);const r=await page.evaluate(async()=>{
-    const {COLUMNS,selectColumn}=await import('/js/research/source-catalog.js');
+    const {COLUMNS}=await import('/js/research/source-catalog.js');const {selectColumn}=await import('/js/domain/column.js');
     return {count:COLUMNS.length,ids:COLUMNS.map(x=>x.id),sources:COLUMNS.map(x=>x.source),allVersioned:COLUMNS.every(x=>x.version===1),noUnsafe:COLUMNS.every(x=>!/(確実に予防|必ず改善|診断を確定)/.test(x.body)),unmatched:selectColumn([])===null}
    });assert.equal(r.count,6);assert.deepEqual(r.ids,['COL01','COL02','COL03','COL04','COL05','COL06']);assert.equal(r.allVersioned,true);assert.equal(r.noUnsafe,true);assert.equal(r.unmatched,true);return {count:r.count,versioned:true,unmatchedHidden:true};
   }finally{await ctx.close()}
