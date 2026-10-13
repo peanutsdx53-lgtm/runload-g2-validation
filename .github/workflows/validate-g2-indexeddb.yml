@@ -58,6 +58,14 @@ jobs:
           RUNLOAD_TEST_URL: http://127.0.0.1:4173
           RUNLOAD_TEST_REPORT: audit/real_indexeddb_actions.json
         run: node tests/real-indexeddb-browser.mjs
+      - name: Verify remaining native IndexedDB evidence gaps in Chromium
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          RUNLOAD_REMAINING_NATIVE_REPORT: audit/g2_remaining_native_actions.json
+        run: |
+          cp ../tests/g2-remaining-native-boundaries.mjs tests/g2-remaining-native-boundaries.mjs
+          node tests/g2-remaining-native-boundaries.mjs
       - name: Run full two-record browser acceptance on actual IndexedDB
         working-directory: candidate
         env:
@@ -177,6 +185,7 @@ jobs:
           name: runload-g2-indexeddb-evidence
           path: |
             candidate/audit/real_indexeddb_actions.json
+            candidate/audit/g2_remaining_native_actions.json
             candidate/audit/g1_direct_branch_evidence_actions.json
             candidate/audit/g1_remaining_branch_evidence_actions.json
             candidate/audit/g1_time_axis_browser_actions.json
