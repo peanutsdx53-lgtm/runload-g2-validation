@@ -22,7 +22,7 @@ jobs:
       - name: Reassemble candidate ZIP and check SHA-256
         run: |
           cat validation/payload_*.b64 | base64 --decode > /tmp/runload-g2-payload.zip
-          echo '510a795b4fa1a6fe7a070b5ce2d80bf524be079aabff6849844bd2a9a9bfcebb  /tmp/runload-g2-payload.zip' | sha256sum --check -
+          echo '6d0766d58a34d1c8cb5d35a961eb372d678a8e12faa0a6a6cc5c1973ac42211f  /tmp/runload-g2-payload.zip' | sha256sum --check -
           mkdir -p candidate
           unzip -q /tmp/runload-g2-payload.zip -d candidate
           test -f candidate/index.html
@@ -123,6 +123,12 @@ jobs:
         run: |
           cp ../tests/g2-g1-return-contracts.mjs tests/g2-g1-return-contracts.mjs
           node tests/g2-g1-return-contracts.mjs
+      - name: Independent final G1 unsaved-draft preservation in genuine Chromium
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          GITHUB_SHA: ${{ github.sha }}
+        run: node tests/g2-last-gate-browser.mjs
       - name: Validate scientific exception contracts EX01 to EX21
         working-directory: candidate
         run: |
@@ -146,6 +152,7 @@ jobs:
             candidate/audit/g1_time_axis_browser_actions.json
             candidate/audit/g1_navigation_browser_actions.json
             candidate/audit/g1_return_contracts_actions.json
+            candidate/audit/g2_last_gate_actions.json
             candidate/audit/test_runner_result.json
             candidate/audit/test_runner_tap.txt
             candidate/audit/real_deep_acceptance_actions.json
