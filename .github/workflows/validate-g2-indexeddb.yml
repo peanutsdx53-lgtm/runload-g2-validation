@@ -87,6 +87,12 @@ jobs:
         run: |
           cp ../tests/g2-g1-e2e-residual.mjs tests/g2-g1-e2e-residual.mjs
           node tests/g2-g1-e2e-residual.mjs
+      - name: Validate scientific exception contracts EX01 to EX21
+        working-directory: candidate
+        run: |
+          cp ../tests/g1-exception-contract.test.mjs tests/g1-exception-contract.test.mjs
+          cp ../tests/g1-exception-browser-crosscheck.test.mjs tests/g1-exception-browser-crosscheck.test.mjs
+          node --test tests/g1-exception-contract.test.mjs tests/g1-exception-browser-crosscheck.test.mjs
       - name: Upload reports, including failures
         if: always()
         uses: actions/upload-artifact@v4
