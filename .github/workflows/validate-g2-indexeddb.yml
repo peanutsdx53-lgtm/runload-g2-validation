@@ -27,6 +27,12 @@ jobs:
           unzip -q /tmp/runload-g2-payload.zip -d candidate
           test -f candidate/index.html
           test -f candidate/tests/real-indexeddb-browser.mjs
+      - name: Apply isolated pre-UI technical fixes and safeguard tests
+        run: |
+          base64 --decode validation/g2-v020-preui.patch.gz.b64 | gzip --decompress | patch -p1 -d candidate
+          cp tests/g2-final-protective-boundaries.test.mjs candidate/tests/g2-final-protective-boundaries.test.mjs
+          cd candidate
+          node --test tests/g2-final-protective-boundaries.test.mjs
       - name: Run existing Node.js regression suite
         working-directory: candidate
         run: |
