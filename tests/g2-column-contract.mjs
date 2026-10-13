@@ -21,7 +21,7 @@ try{
  });
  await check('CO02','Unknown scientific reason cannot generate an unsupported column',async()=>{
   const r=await page.evaluate(async()=>{
-   const {selectColumn}=await import('/js/research/source-catalog.js');
+   const {selectColumn}=await import('/js/domain/column.js');
    return selectColumn([{messageCode:'UNRECOGNIZED_RULE',evidenceIds:['R01'],dataKind:'reference'}])===null;
   });assert.equal(r,true);return {excluded:true};
  });
@@ -81,7 +81,7 @@ try{
   });assert.deepEqual(r,{recordSame:true,regionSame:true,closed:true});return r;
  });
  await check('CO11','Empty interpretation set produces no unsupported recommendation',async()=>{
-  const r=await page.evaluate(async()=>{const {selectColumn}=await import('/js/research/source-catalog.js');return selectColumn([])});
+  const r=await page.evaluate(async()=>{const {selectColumn}=await import('/js/domain/column.js');return selectColumn([])});
   assert.equal(r,null);return {emptySkipped:true};
  });
  await check('CO12','Six column descriptions have no computed injury-risk rankings',async()=>{
@@ -118,7 +118,7 @@ try{
   const id='COL'+String(i).padStart(2,'0');
   await check(id,'Editorial '+id+' matches declared unique interpretation reason code',async()=>{
    const r=await page.evaluate(async(id)=>{
-    const {COLUMNS,selectColumn}=await import('/js/research/source-catalog.js');
+    const {COLUMNS}=await import('/js/research/source-catalog.js');const {selectColumn}=await import('/js/domain/column.js');
     const col=COLUMNS.find(x=>x.id===id),rule=col.rules[0];
     const candidate=selectColumn([{messageCode:rule,dataKind:'reference',evidenceIds:['R01']}]);
     return {wanted:id,returned:candidate?.id??null,source:col.source,rule};
