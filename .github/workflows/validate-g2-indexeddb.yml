@@ -66,6 +66,13 @@ jobs:
         run: |
           cp ../tests/g2-exception-acceptance.mjs tests/g2-exception-acceptance.mjs
           node tests/g2-exception-acceptance.mjs
+      - name: Verify all twelve G1 consultation sharing scenarios
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+        run: |
+          cp ../tests/g2-sharing-contract.mjs tests/g2-sharing-contract.mjs
+          node tests/g2-sharing-contract.mjs
       - name: Upload reports, including failures
         if: always()
         uses: actions/upload-artifact@v4
@@ -75,6 +82,7 @@ jobs:
             candidate/audit/real_indexeddb_actions.json
             candidate/audit/real_deep_acceptance_actions.json
             candidate/audit/real_exception_acceptance_actions.json
+            candidate/audit/real_sharing_contract_actions.json
             candidate/audit/frozen_reference_hashes.json
             /tmp/runload-g2-server.log
           if-no-files-found: warn
