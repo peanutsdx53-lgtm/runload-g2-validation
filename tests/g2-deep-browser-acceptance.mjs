@@ -139,6 +139,38 @@ try{
   const info=await page.evaluate(()=>({body:document.documentElement.scrollWidth,viewport:document.documentElement.clientWidth}));
   assert.ok(info.body<=info.viewport+2,JSON.stringify(info));return info;
  });
+
+ await check('DEEP-14','Actual Chromium clipboard receives only user-selected sharing fields',async()=>{
+  await context.grantPermissions(['clipboard-read','clipboard-write'],{origin:new URL(url).origin});
+  await page.locator('[data-action="navigate"][data-id="S05"]:visible').first().click();
+  await page.locator('[data-action="open-sharing"]').click();
+  const selected=page.locator('input[data-share-key="recordDate"]');
+  await selected.check();
+  await page.locator('[data-action="preview-short"]').click();
+  const preview=await page.locator('#share-preview').textContent();
+  assert.match(preview,/走行日/);
+  assert.doesNotMatch(preview,/DEEP_PRIVATE_REFLECTION_9x/);
+  await page.locator('[data-action="copy-share"]').click();
+  const copied=await page.evaluate(()=>navigator.clipboard.readText());
+  assert.equal(copied,preview);
+  return {clipboardBytes:Buffer.byteLength(copied),unselectedExcluded:true};
+ });
+ await check('DEEP-15','Actual browser download creates complete readable backup JSON',async()=>{
+  await page.locator('[data-action="close-modal"]').first().click();
+  await page.locator('[data-action="close-modal"]').first().click();
+  await page.locator('[data-action="navigate"][data-id="S14"]:visible').first().click();
+  await page.locator('[data-action="open-data-modal"]').click();
+  const downloadPromise=page.waitForEvent('download',{timeout:15000});
+  await page.locator('[data-action="export-backup"]').click();
+  const download=await downloadPromise;
+  assert.equal(download.suggestedFilename(),'RunLoad_Backup_V1.json');
+  const text=await fs.readFile(await download.path(),'utf8');
+  const root=JSON.parse(text);
+  assert.equal(root.format,'RunLoadLocalBackup');
+  assert.equal(root.stores.records.length,1);
+  assert.equal(root.counts.records,1);
+  return {filename:download.suggestedFilename(),recordCount:root.counts.records,sizeBytes:Buffer.byteLength(text)};
+ });
  await context.close();await mobileContext.close();
 }catch(error){failure={name:error?.name??'Error',message:String(error?.stack||error)};console.error(error);}finally{
  if(browser)await browser.close().catch(()=>{});
@@ -146,4 +178,4 @@ try{
  await fs.mkdir(output.split('/').slice(0,-1).join('/')||'.',{recursive:true});await fs.writeFile(output,JSON.stringify(report,null,2)+'\n');
  console.log(`Deep acceptance: ${checks.filter(x=>x.status==='PASS').length}/${checks.length} PASS, failure=${failure?'YES':'NO'}`);
 }
-if(failure||checks.length!==13)process.exitCode=1;
+if(failure||checks.length!==15)process.exitCode=1;
