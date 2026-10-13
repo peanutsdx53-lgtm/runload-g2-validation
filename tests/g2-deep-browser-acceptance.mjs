@@ -7,7 +7,7 @@ const url=process.env.RUNLOAD_TEST_URL||'http://127.0.0.1:4173';
 const output=process.env.RUNLOAD_DEEP_REPORT||'audit/real_deep_acceptance_actions.json';
 const checks=[];let browser;let failure=null;
 async function check(id,contract,task){const t=performance.now();try{const detail=await task();checks.push({id,contract,status:'PASS',durationMs:Math.round(performance.now()-t),detail});console.log('PASS',id,contract);return detail;}catch(error){checks.push({id,contract,status:'FAIL',durationMs:Math.round(performance.now()-t),error:String(error?.stack||error)});throw error;}}
-async function visit(page){const response=await page.goto(url+'/index.html',{waitUntil:'domcontentloaded',timeout:30000});assert.equal(response.status(),200);await page.locator('#app button').first().waitFor({timeout:15000});}
+async function visit(page){const response=await page.goto(url+'/index.html',{waitUntil:'domcontentloaded',timeout:30000});assert.equal(response.status(),200);await page.locator('.main-content h1').waitFor({timeout:15000});}
 const database=async page=>page.evaluate(async()=>{const x=await import('/js/storage/database.js');const db=await x.openDatabase();try{return await x.readAll(db)}finally{db.close()}});
 try{
  browser=await chromium.launch({headless:true});
@@ -42,9 +42,9 @@ try{
   assert.equal(state.records[0].revision,1);
   return {id:state.records[0].recordId,regions:12};
  });
- await check('DEEP-04','Records and snapshot survive page reload and new workflow instance',async()=>{await mobile.reload({waitUntil:'domcontentloaded'});await mobile.locator('#app button').first().waitFor();const state=await database(mobile);assert.equal(state.records.length,1);assert.equal(state.resultSnapshots.length,1);const button=mobile.locator('[data-action="open-record"]');assert.ok(await button.count()>0);return {revision:state.records[0].revision};});
+ await check('DEEP-04','Records and snapshot survive page reload and new workflow instance',async()=>{await mobile.reload({waitUntil:'domcontentloaded'});await mobile.locator('.main-content h1').waitFor();const state=await database(mobile);assert.equal(state.records.length,1);assert.equal(state.resultSnapshots.length,1);const button=mobile.locator('[data-action="open-record"]');assert.ok(await button.count()>0);return {revision:state.records[0].revision};});
  await check('DEEP-05','Optional modal traps background and closes without input loss',async()=>{
-  await mobile.locator('[data-action="navigate"][data-id="S05"]').first().click();
+  await mobile.locator('[data-action="navigate"][data-id="S05"]:visible').first().click();
   await mobile.locator('[data-action="open-region"]').first().click();
   assert.equal(await mobile.locator('[role="dialog"]').count(),1);
   assert.equal(await mobile.locator('.app-shell').getAttribute('inert'),'');
@@ -135,7 +135,7 @@ try{
   return {remainingRecords:result.records.length,detachedFollowup:true};
  });
  await check('DEEP-13','Desktop screen and modal show no horizontal overflow at normal width',async()=>{
-  await page.setViewportSize({width:1366,height:768});await page.reload({waitUntil:'domcontentloaded'});await page.locator('#app button').first().waitFor();
+  await page.setViewportSize({width:1366,height:768});await page.reload({waitUntil:'domcontentloaded'});await page.locator('.main-content h1').waitFor();
   const info=await page.evaluate(()=>({body:document.documentElement.scrollWidth,viewport:document.documentElement.clientWidth}));
   assert.ok(info.body<=info.viewport+2,JSON.stringify(info));return info;
  });
