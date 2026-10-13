@@ -1,0 +1,63 @@
+name: RunLoad G2 Real IndexedDB Validation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  indexeddb:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout isolated validation repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reassemble candidate ZIP and check SHA-256
+        run: |
+          cat validation/payload_*.b64 | base64 --decode > /tmp/runload-g2-payload.zip
+          echo '538c6624dcbf2e87f66691fa80e86cde8ed827a59c082556b77cb8285c928f75  /tmp/runload-g2-payload.zip' | sha256sum --check -
+          mkdir -p candidate
+          unzip -q /tmp/runload-g2-payload.zip -d candidate
+          test -f candidate/index.html
+          test -f candidate/tests/real-indexeddb-browser.mjs
+      - name: Run existing Node.js regression suite
+        working-directory: candidate
+        run: npm test
+      - name: Install Chromium for automated browser test
+        working-directory: candidate
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local HTTP test server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory candidate > /tmp/runload-g2-server.log 2>&1 &
+          for n in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4173/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/runload-g2-server.log
+          exit 1
+      - name: Test actual IndexedDB on Chromium HTTP origin
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          RUNLOAD_TEST_REPORT: audit/real_indexeddb_actions.json
+        run: node tests/real-indexeddb-browser.mjs
+      - name: Upload reports, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runload-g2-indexeddb-evidence
+          path: |
+            candidate/audit/real_indexeddb_actions.json
+            candidate/audit/frozen_reference_hashes.json
+            /tmp/runload-g2-server.log
+          if-no-files-found: warn
+          retention-days: 14
