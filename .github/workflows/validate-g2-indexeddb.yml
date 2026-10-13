@@ -51,6 +51,9 @@ jobs:
       - name: Apply explicit unsupported legacy-migration guidance
         run: |
           base64 --decode validation/g2-v034-delta.patch.gz.b64 | gzip --decompress | patch -p1 -d candidate
+      - name: Implement approved G1 short term lookup and help return
+        run: |
+          base64 --decode validation/g2-v035-delta.patch.gz.b64 | gzip --decompress | patch -p1 -d candidate
       - name: Run existing Node.js regression suite
         working-directory: candidate
         run: |
