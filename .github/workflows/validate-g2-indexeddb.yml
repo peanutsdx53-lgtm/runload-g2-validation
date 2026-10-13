@@ -22,7 +22,7 @@ jobs:
       - name: Reassemble candidate ZIP and check SHA-256
         run: |
           cat validation/payload_*.b64 | base64 --decode > /tmp/runload-g2-payload.zip
-          echo 'a8db534ec36dc6b842247aba21a139305aeeeaaa76031979280fb587ada30e6d  /tmp/runload-g2-payload.zip' | sha256sum --check -
+          echo '1ebef06e0cab3d5423b161b0f1d1183b51495662599093e3cf2baffb38a2df1c  /tmp/runload-g2-payload.zip' | sha256sum --check -
           mkdir -p candidate
           unzip -q /tmp/runload-g2-payload.zip -d candidate
           test -f candidate/index.html
@@ -147,6 +147,12 @@ jobs:
           RUNLOAD_TEST_URL: http://127.0.0.1:4173
           GITHUB_SHA: ${{ github.sha }}
         run: node tests/g2-corrupt-result-native-browser.mjs
+      - name: Independently verify G1 technical viewport and keyboard navigation contracts
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          GITHUB_SHA: ${{ github.sha }}
+        run: node tests/g2-g1-technical-viewport-browser.mjs
       - name: Validate scientific exception contracts EX01 to EX21
         working-directory: candidate
         run: |
@@ -174,6 +180,7 @@ jobs:
             candidate/audit/g2_calendar_history_native.json
             candidate/audit/g2_history_over80_native.json
             candidate/audit/g2_corrupt_result_native.json
+            candidate/audit/g2_technical_viewport_browser.json
             candidate/audit/test_runner_result.json
             candidate/audit/test_runner_tap.txt
             candidate/audit/real_deep_acceptance_actions.json
