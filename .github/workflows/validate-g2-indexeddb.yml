@@ -112,7 +112,9 @@ jobs:
         env:
           RUNLOAD_TEST_URL: http://127.0.0.1:4173
           GITHUB_SHA: ${{ github.sha }}
-        run: node tests/g2-g1-navigation-browser.mjs
+        run: |
+          cp ../tests/g2-g1-navigation-browser.mjs tests/g2-g1-navigation-browser.mjs
+          node tests/g2-g1-navigation-browser.mjs
       - name: Validate scientific exception contracts EX01 to EX21
         working-directory: candidate
         run: |
