@@ -46,6 +46,7 @@ try{
  });
  await caseCheck('DB09','separate browser profiles do not silently synchronize native IndexedDB',async()=>{
    const c3=await browser.newContext();const p4=await c3.newPage();await visit(p4);
+   await p4.locator('[data-action="navigate"][data-id="S14"]').first().click();
    const info=await p4.evaluate(async()=>{
      const {openDatabase,readAll}=await import('/js/storage/database.js');const db=await openDatabase();try{return {records:(await readAll(db)).records.length,hasManualBackupNotice:document.body.textContent.includes('別端末との自動同期はありません')};}finally{db.close();}
    });assert.equal(info.records,0);assert.equal(info.hasManualBackupNotice,true);
