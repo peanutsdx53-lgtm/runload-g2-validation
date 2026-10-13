@@ -110,6 +110,15 @@ jobs:
         run: |
           cp ../tests/g2-final-preui-browser.mjs tests/g2-final-preui-browser.mjs
           node tests/g2-final-preui-browser.mjs
+      - name: Independently verify pending G1 original clauses on real Chromium
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          RUNLOAD_LAST_CLAUSES: audit/g2_final_original_clauses.json
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          cp ../tests/g2-final-clause-browser.mjs tests/g2-final-clause-browser.mjs
+          node tests/g2-final-clause-browser.mjs
       - name: Verify all twelve G1 consultation sharing scenarios
         working-directory: candidate
         env:
@@ -216,6 +225,7 @@ jobs:
             candidate/audit/g2_remaining_native_actions.json
             candidate/audit/g2_final_native_restart_isolation.json
             candidate/audit/g2_final43_technical_browser.json
+            candidate/audit/g2_final_original_clauses.json
             candidate/audit/g1_direct_branch_evidence_actions.json
             candidate/audit/g1_remaining_branch_evidence_actions.json
             candidate/audit/g1_time_axis_browser_actions.json
