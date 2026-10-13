@@ -115,6 +115,14 @@ jobs:
         run: |
           cp ../tests/g2-g1-navigation-browser.mjs tests/g2-g1-navigation-browser.mjs
           node tests/g2-g1-navigation-browser.mjs
+      - name: Verify ten G1 return contracts on real Chromium
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          cp ../tests/g2-g1-return-contracts.mjs tests/g2-g1-return-contracts.mjs
+          node tests/g2-g1-return-contracts.mjs
       - name: Validate scientific exception contracts EX01 to EX21
         working-directory: candidate
         run: |
@@ -137,6 +145,7 @@ jobs:
             candidate/audit/g1_remaining_branch_evidence_actions.json
             candidate/audit/g1_time_axis_browser_actions.json
             candidate/audit/g1_navigation_browser_actions.json
+            candidate/audit/g1_return_contracts_actions.json
             candidate/audit/test_runner_result.json
             candidate/audit/test_runner_tap.txt
             candidate/audit/real_deep_acceptance_actions.json
