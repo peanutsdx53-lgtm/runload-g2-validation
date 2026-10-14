@@ -1,0 +1,29 @@
+name: RunLoad original source frozen copy 20261014
+on:
+  push:
+    branches: [latest-app-original-copy-20261014]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  archive-old:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch immutable old application main snapshot
+        run: |
+          git clone --depth 1 https://github.com/peanutsdx53-lgtm/runload-app.git /tmp/old-app
+          test "$(git -C /tmp/old-app rev-parse HEAD)" = "ff7bb4a96abb296fe6a4b1d8e3f98e8b4f1f46e7"
+          git -C /tmp/old-app archive --format=zip --output=/tmp/RunLoad_Original_App_GitHub_main_ff7bb4c.zip HEAD
+          sha256sum /tmp/RunLoad_Original_App_GitHub_main_ff7bb4c.zip > /tmp/ORIGINAL_SOURCE_SHA256.txt
+          printf '%s\n' 'Repository: peanutsdx53-lgtm/runload-app' 'Commit: ff7bb4a96abb296fe6a4b1d8e3f98e8b4f1f46e7' 'Archive: git archive; no source modifications' 'Formal Current V2.85 refers to a different Git commit 42af4cc781f97374c41be4bb71decde5fe6162a9' > /tmp/ORIGINAL_SOURCE_PROVENANCE.txt
+          unzip -t /tmp/RunLoad_Original_App_GitHub_main_ff7bb4c.zip | tail -2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: old-app-main-ff7bb4c-unaltered-source
+          path: |
+            /tmp/RunLoad_Original_App_GitHub_main_ff7bb4c.zip
+            /tmp/ORIGINAL_SOURCE_SHA256.txt
+            /tmp/ORIGINAL_SOURCE_PROVENANCE.txt
+          retention-days: 14
