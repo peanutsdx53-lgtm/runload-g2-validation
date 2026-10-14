@@ -1,0 +1,27 @@
+name: Legacy Source Reference Snapshot
+on:
+  workflow_dispatch:
+  push:
+    branches: [uiux-old-skin-v038]
+    paths: ['.github/workflows/g2-old-source-reference.yml']
+permissions:
+  contents: read
+jobs:
+  reference:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Obtain exact old app source for authorized UI reproduction
+        run: |
+          git clone --depth=1 https://github.com/peanutsdx53-lgtm/runload-app.git /tmp/runload-legacy
+          git -C /tmp/runload-legacy rev-parse HEAD > /tmp/LEGACY_SHA
+          mkdir -p legacy-reference
+          cp /tmp/LEGACY_SHA legacy-reference/LEGACY_SHA.txt
+          cp -a /tmp/runload-legacy/{assets,icons,styles,screens,ui} legacy-reference/ 
+          cp /tmp/runload-legacy/index.html legacy-reference/
+          find legacy-reference -type f | sort | wc -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: old-app-ui-source-reference
+          path: legacy-reference/
+          retention-days: 7
