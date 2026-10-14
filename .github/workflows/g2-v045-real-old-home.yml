@@ -100,7 +100,7 @@ jobs:
       - name: Overlay original old PC home source and display compatibility layer
         run: |
           base64 --decode validation/v045-direct-original-home-overlay.zip.b64 >/tmp/v045-oldhome-overlay.zip
-          echo '511fd0b1f116eaec2b552b0c6337b8d10a48a0c8aa21f8fc6e4513421b1f05f0  /tmp/v045-oldhome-overlay.zip' | sha256sum --check -
+          echo '5b16b10b4cd4d89e2b7baef97b0e04203ae9af1def874293263a413faa3cee1f  /tmp/v045-oldhome-overlay.zip' | sha256sum --check -
           unzip -oq /tmp/v045-oldhome-overlay.zip -d candidate
           cd candidate
           echo '4ea33191be63414bdaca0c45e0c581562ac069710657f89ae2dda8c931e4d14d  js/ui/legacy/homeScreen.original.js' | sha256sum --check -
