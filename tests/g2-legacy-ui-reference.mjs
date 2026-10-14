@@ -13,7 +13,25 @@ for(const [size,w,h] of [['pc1440',1440,900],['mobile390',390,844],['mobile320',
  for(const [key,hash] of [['home','#/home'],['record','#/record-input'],['result','#/result'],['history','#/history']]){
   try {
    await page.goto(base+hash,{waitUntil:'domcontentloaded',timeout:30000});
-   await page.waitForTimeout(1300);
+   await page.waitForTimeout(1100);
+   if(key==='home'){
+    if(w<880){
+     const intro=page.locator('[data-mobile-onboarding]');
+     if(await intro.isVisible().catch(()=>false)){
+      for(let i=0;i<3;i++) await page.locator('[data-onboarding-next]').click();
+      const consent=page.locator('[data-onboarding-consent]');
+      if(await consent.count()) await consent.check();
+      await page.locator('[data-onboarding-complete]').click();
+      await page.waitForTimeout(850);
+     }
+    }else{
+     const agree=page.getByRole('button',{name:'同意して利用を開始'});
+     if(await agree.isVisible().catch(()=>false)){
+      const check=page.getByRole('checkbox',{name:/同意/});
+      await check.check();await agree.click();await page.waitForTimeout(850);
+     }
+    }
+   }
    const metrics=await page.evaluate(()=>({location:location.hash,title:document.querySelector('.screen h1, #main-content h1, .app-header__screen-title, .mobile-topbar__screen-title')?.textContent?.trim()?.slice(0,150)??'',scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,rootText:document.querySelector('#main-content')?.textContent?.trim()?.slice(0,180)??'',dialogs:document.querySelectorAll('[role=dialog]').length,screenClasses:document.querySelector('#main-content .screen')?.className??''}));
    const file=size+'_'+key+'.png';
    await page.screenshot({path:dir+'/'+file,fullPage:true,animations:'disabled',timeout:25000});
