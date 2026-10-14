@@ -128,7 +128,7 @@ jobs:
       - name: Overlay byte-identical old PC History renderer, retaining G2 comparison
         run: |
           base64 --decode validation/v047-literal-old-history-overlay.zip.b64 >/tmp/v047-oldhistory-overlay.zip
-          echo '81f1a2dd1cf3a1df5d3908a083b145cff0e9611da8829274d5bbe9af5ceeddac  /tmp/v047-oldhistory-overlay.zip' | sha256sum --check -
+          echo '21c8df27471ce96fa3dea997ccb355937b4c36731e3498ee9280aace86959f08  /tmp/v047-oldhistory-overlay.zip' | sha256sum --check -
           unzip -oq /tmp/v047-oldhistory-overlay.zip -d candidate
           cd candidate
           cmp js/ui/legacy/historyScreen.original.js /tmp/runload-old-v039/screens/historyScreen.js
