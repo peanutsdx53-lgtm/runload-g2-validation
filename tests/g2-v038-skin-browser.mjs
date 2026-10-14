@@ -20,7 +20,7 @@ for(const [label,width,height] of [['PC',1440,900],['mobile',390,844],['narrow',
  };
  try{
   await page.goto(base+'/index.html',{waitUntil:'domcontentloaded'});
-  await page.locator('#main-content h1').waitFor();
+  await page.locator('#main-content .screen-header h1').waitFor();
   await check('S01');
   const nav=async id=>{
    if(width>=1100){if(['S10','S14'].includes(id)){await page.locator('.header-actions [data-action="open-more"]').click();return page.locator('#desktop-more-navigation [data-id="'+id+'"]').click();}return page.locator('.sidebar [data-id="'+id+'"]').click();}
