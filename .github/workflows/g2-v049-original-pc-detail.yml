@@ -155,7 +155,7 @@ jobs:
       - name: Overlay exact old PC S06 body-detail renderer and G2 boundary
         run: |
           base64 --decode validation/v049-old-pc-detail-overlay.zip.b64 >/tmp/v049-old-detail.zip
-          echo '0a8ef61148626fe8a0faf8c343f48cdf2a8a41eacd914d3ca4a2daa4f5d3b7cc  /tmp/v049-old-detail.zip' | sha256sum --check -
+          echo '5260186ac6b7398c9bb4e4093fe02fe107871eae1efe430d649c532d0f8afb34  /tmp/v049-old-detail.zip' | sha256sum --check -
           unzip -oq /tmp/v049-old-detail.zip -d candidate
           cd candidate
           cmp js/ui/legacy/bodyPartDetail.original.js /tmp/runload-old-v039/screens/bodyPartDetailScreen.js
