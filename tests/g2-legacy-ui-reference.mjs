@@ -28,7 +28,9 @@ for(const [size,w,h] of [['pc1440',1440,900],['mobile390',390,844],['mobile320',
      const agree=page.getByRole('button',{name:'同意して利用を開始'});
      if(await agree.isVisible().catch(()=>false)){
       const check=page.getByRole('checkbox',{name:/同意/});
-      await check.check();await agree.click();await page.waitForTimeout(850);
+      await check.check();await agree.click();await page.waitForTimeout(650);
+      const tutorial=page.getByRole('button',{name:'使い始める'});
+      if(await tutorial.isVisible().catch(()=>false)){await tutorial.click();await page.waitForTimeout(550);}
      }
     }
    }
