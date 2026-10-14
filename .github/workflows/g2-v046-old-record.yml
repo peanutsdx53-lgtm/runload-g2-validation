@@ -115,7 +115,7 @@ jobs:
       - name: Overlay literal original PC record renderer and G2 display adapter
         run: |
           base64 --decode validation/v046-literal-old-record-overlay.zip.b64 >/tmp/v046-original-record.zip
-          echo '1540f9e3690fc4d0a7e50af2f45fa0fb24a067cae738b3b053557b355b83447c  /tmp/v046-original-record.zip' | sha256sum --check -
+          echo '4768a26bcbe661eda6e79e02fda90dbaa55c16f56e0da83735c22be7f4e11d63  /tmp/v046-original-record.zip' | sha256sum --check -
           unzip -oq /tmp/v046-original-record.zip -d candidate
           cd candidate
           cmp js/ui/legacy/desktopRecordInput.original.js /tmp/runload-old-v039/screens/desktop/recordInputScreen.js
