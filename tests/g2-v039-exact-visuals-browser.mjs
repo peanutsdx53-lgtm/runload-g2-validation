@@ -25,7 +25,7 @@ for(const [device,width,height] of [['pc1440',1440,900],['phone390',390,844],['p
    width:x.naturalWidth,height:x.naturalHeight
   })));
   assert(assetState.every(v=>v.loaded),'Unloaded author-approved ROF art');
-  await page.locator('.rof-choice',{hasText:'0'}).click();
+  await page.getByRole('button',{name:'疲労感 0',exact:true}).click();
   assert.equal(await page.locator('#field-fatigueValue').inputValue(),'0','zero must remain valid');
   assert.equal(await page.locator('.rof-choice[aria-pressed="true"]').count(),1);
   log('ROF-J five unaltered assets, anchored illustrations and selectable 0');
