@@ -11,7 +11,7 @@ for(const [label,width,height] of [['PC',1440,900],['mobile',390,844],['narrow',
  const check=async(state)=>{
   const data=await page.evaluate(()=>{
    const el=document.documentElement,body=document.body;
-   return {width:innerWidth,docWidth:el.scrollWidth,bodyWidth:body.scrollWidth,title:document.querySelector('#main-content h1')?.textContent??'',brandWords:(document.querySelector('#main-content')?.innerText||'').includes('RunLoad'),required:document.querySelectorAll('#field-recordDate,#field-distanceKm,#field-durationMinutes').length,nav:!!document.querySelector('.footer-nav'),dialog:!!document.querySelector('[role=dialog]')};
+   return {width:innerWidth,docWidth:el.scrollWidth,bodyWidth:body.scrollWidth,title:document.querySelector('#main-content .screen h1')??document.querySelector('#main-content h1')?.textContent??'',brandWords:(document.querySelector('#main-content')?.innerText||'').includes('RunLoad'),required:document.querySelectorAll('#field-recordDate,#field-distanceKm,#field-durationMinutes').length,nav:!!document.querySelector('.footer-nav'),dialog:!!document.querySelector('[role=dialog]')};
   });
   if(data.docWidth>width+1||data.bodyWidth>width+1)throw Error('horizontal overflow '+label+' '+state+' '+JSON.stringify(data));
   if(data.brandWords)throw Error('unnecessary branding visible '+label+' '+state);
@@ -20,7 +20,7 @@ for(const [label,width,height] of [['PC',1440,900],['mobile',390,844],['narrow',
  };
  try{
   await page.goto(base+'/index.html',{waitUntil:'domcontentloaded'});
-  await page.locator('#main-content h1').waitFor();
+  await page.locator('#main-content h1:visible').waitFor();
   await check('S01');
   const nav=async id=>{
    if(width>=1100){if(['S10','S14'].includes(id)){await page.locator('.header-actions [data-action="open-more"]').click();return page.locator('#desktop-more-navigation [data-id="'+id+'"]').click();}return page.locator('.sidebar [data-id="'+id+'"]').click();}
