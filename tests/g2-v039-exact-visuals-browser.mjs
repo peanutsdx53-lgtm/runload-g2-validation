@@ -15,7 +15,7 @@ for(const [device,width,height] of [['pc1440',1440,900],['phone390',390,844],['p
  }
  try{
   await page.goto(base+'/index.html',{waitUntil:'domcontentloaded'});
-  await page.locator('#main-content h1').waitFor();
+  await page.locator('#main-content h1:visible').waitFor();
   await page.locator('[data-action="open-fatigue"]').first().click();
   await page.locator('.modal-S03').waitFor();
   assert.equal(await page.locator('.rof-j-original-anchor').count(),5);
