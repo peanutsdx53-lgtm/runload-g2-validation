@@ -39,7 +39,7 @@ for(const [name,width,height] of [['pc1440',1440,900],['phone390',390,844],['pho
   await nav('S10');await shot('S10_reflect');await nav('S14');await shot('S14_data');
   await page.locator('[data-action="open-data-modal"]').click();await page.locator('[role=dialog]').waitFor();await shot('S15_data_modal');
   await page.keyboard.press('Escape');await page.locator('[role=dialog]').waitFor({state:'detached'});
-  await nav('S01');await shot('S01_saved');if(width>=1100)await nav('S02');await page.locator('[data-action="open-fatigue"]:visible').first().click();await page.locator('[role=dialog]').waitFor();await shot('S03_fatigue');
+  await nav('S01');await shot('S01_saved');if(width>=1100){await nav('S02');await page.locator('.old-record-step').filter({hasText:'身体・走ったときの記録'}).locator('summary').click();}await page.locator('[data-action="open-fatigue"]:visible').first().click();await page.locator('[role=dialog]').waitFor();await shot('S03_fatigue');
   await page.keyboard.press('Escape');await page.locator('[role=dialog]').waitFor({state:'detached'});await page.locator('[data-action="open-help"]').click();await page.locator('[role=dialog]').waitFor();await shot('S16_help');
  }catch(e){errors.push({name,error:String(e.stack||e)});}
  records.push({name,pageErrors});await ctx.close();
