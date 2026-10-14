@@ -27,4 +27,23 @@ try{
  for(const screen of ['S03','S04','S06','S08','S09','S11','S12','S13','S15','S16']){await page.evaluate(async(screen)=>{const {Workflow}=await import('/js/app/workflow.js');const {render}=await import('/js/ui/views.js');const w=new Workflow();await w.init();w.navigate('S05');w.openModal(screen);render(w);},screen);const z=await page.evaluate(()=>({screen:document.querySelector('#modal-title')?.textContent,width:document.documentElement.scrollWidth,body:document.body.scrollWidth,modal:document.querySelector('.modal')?.scrollWidth}));assert.ok(z.width<=width+1,JSON.stringify({width,screen,...z}));assert.ok(z.body<=width+1,JSON.stringify({width,screen,...z}));checks.push({width,screen,document:z.width});}
  await ctx.close();}assert.equal(checks.length,48);return {checked:checks.length,details:checks};});
  await row('E2E12-200-400-ZOOM-REFLOW',async()=>{const checks=[];for(const [scale,width] of [[2,683],[4,341]]){const ctx=await browser.newContext({viewport:{width,height:850}}),page=await ctx.newPage();await go(page);await seed(page);await page.reload();for(const screen of ['S01','S02','S05','S07','S10','S14']){await page.evaluate(async(screen)=>{const {Workflow}=await import('/js/app/workflow.js');const {render}=await import('/js/ui/views.js');const w=new Workflow();await w.init();w.navigate(screen);render(w);},screen);const x=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));assert.ok(x.scroll<=width+1,JSON.stringify({scale,screen,...x}));checks.push({scale,screen,viewport:width,layoutReflow:true});}await ctx.close();}assert.equal(checks.length,12);return {note:'Effective CSS viewport equivalent to desktop 1366 at browser zoom',details:checks};});
+ await row('E2E12-NATIVE-CSS-ZOOM-200-400',async()=>{
+  const ctx=await browser.newContext({viewport:{width:1366,height:850}}),page=await ctx.newPage();
+  await go(page);await seed(page);await page.reload();
+  const details=[];
+  for(const zoom of [2,4]){
+   for(const screen of ['S01','S02','S05','S07','S10','S14']){
+    const measured=await page.evaluate(async({zoom,screen})=>{
+     document.documentElement.style.zoom=String(zoom);
+     const {Workflow}=await import('/js/app/workflow.js');
+     const {render}=await import('/js/ui/views.js');
+     const w=new Workflow();await w.init();w.navigate(screen);render(w);
+     return {zoom:Number(getComputedStyle(document.documentElement).zoom),viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,heading:document.querySelector('.main-content h1')?.textContent};
+    },{zoom,screen});
+    assert.equal(measured.zoom,zoom);assert.ok(measured.scrollWidth<=measured.viewport+1,JSON.stringify({screen,...measured}));
+    assert.ok(measured.heading?.length>0);details.push({screen,...measured});
+   }
+  }
+  await ctx.close();return {tested:details.length,details};
+ });
 }catch(e){results.push({id:'HARNESS-SETUP',status:'FAIL',error:String(e.stack||e)});console.error(e.stack||e);}finally{await browser?.close().catch(()=>{});await mkdir('audit',{recursive:true});const file=process.env.G2_FINAL43_BROWSER_REPORT||'audit/g2_final43_technical_browser.json';await writeFile(file,JSON.stringify({schema:'G2 G1 final pending acceptance technical evidence',testedAgainst:process.env.GITHUB_SHA??null,results},null,2)+'\n');const failed=results.filter(x=>x.status!=='PASS');console.log(`Final pending technical targeted browser: ${results.length-failed.length}/${results.length} PASS`);if(failed.length)process.exitCode=1;}
