@@ -15,7 +15,7 @@ for(const [name,width,height] of [['pc1440',1440,900],['phone390',390,844],['pho
   console.log(name,state,JSON.stringify(metrics));
  }
  async function nav(id){
-  if(width>=1100)return page.locator('.sidebar [data-id="'+id+'"]').click();
+  if(width>=1100){if(['S10','S14'].includes(id)){await page.locator('.header-actions [data-action="open-more"]').click();return page.locator('#desktop-more-navigation [data-id="'+id+'"]').click();}return page.locator('.sidebar [data-id="'+id+'"]').click();}
   if(id==='S10'||id==='S14'){await page.locator('.footer-nav [data-action="open-more"]').click();return page.locator('#more-navigation [data-id="'+id+'"]').click();}
   return page.locator('.footer-nav [data-id="'+id+'"]').click();
  }
