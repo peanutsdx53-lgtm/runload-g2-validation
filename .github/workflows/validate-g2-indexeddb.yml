@@ -54,6 +54,17 @@ jobs:
       - name: Implement approved G1 short term lookup and help return
         run: |
           base64 --decode validation/g2-v035-delta.patch.gz.b64 | gzip --decompress | patch -p1 -d candidate
+      - name: Preserve G1 help glossary alongside filtered search
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('candidate/js/ui/views.js')
+          s=p.read_text()
+          a="return Stack(Input('用語を検索（任意）'"
+          b="return Stack(P('用語：参考100（同じ指標の基準条件との比）、A1（原著掲載値）、A2（原著の式）、B（原著点間の区分線形補間）。'),P('取得時刻：走行前後の疲労は取得時刻の条件が成立した場合に限り差を表示します。'),Input('用語を検索（任意）'"
+          assert s.count(a)==1
+          p.write_text(s.replace(a,b))
+          PY
       - name: Run existing Node.js regression suite
         working-directory: candidate
         run: |
