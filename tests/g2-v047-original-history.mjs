@@ -17,7 +17,7 @@ for(const [name,width,height] of [['pc1440',1440,900],['pc1280',1280,800],['phon
   await page.locator('[role=dialog]').waitFor({state:'detached'});
   await nav('S07');
   if(width>=1100) {
-   const inspect=await page.locator('#main-content').evaluate(e=>({text:e.innerText.slice(0,1200),html:e.innerHTML.slice(0,2100),count:e.querySelectorAll('.record-item').length,source:e.querySelectorAll('.pc-history-original-source').length}));console.log(name,'CURRENT_HISTORY_DOM',JSON.stringify(inspect));await page.screenshot({path:'audit/v047_history/'+name+'_debug.png',fullPage:true,animations:'disabled'});
+   await page.locator('.pc-history-original-source .record-item').waitFor();
    assert.equal(await page.locator('.pc-history-original-source .record-item').count(),1);
    assert.equal(await page.locator('.pc-history-original-source [data-action="delete-history-record"]').count(),0);
    assert.equal(await page.locator('.pc-history-original-source [data-action="open-record"]').count(),1);
