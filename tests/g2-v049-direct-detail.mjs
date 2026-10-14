@@ -12,11 +12,13 @@ for(const [label,width,height] of [['pc1440',1440,900],['pc1280',1280,800],['pho
   const detail=page.locator('.g2-detail-original-source');assert.equal(await detail.count(),1);
   assert.equal(await detail.locator('.detail-hero .detail-locator svg').count(),1);
   assert.equal(await detail.locator('.trend-card svg.trend-svg--pc').count(),1);
+  assert.equal(await detail.locator('.trend-card svg .trend-point').count(),1,'Single saved record must produce one point');
   assert((await detail.innerText()).includes('股関節')|| (await detail.innerText()).includes('臀部'));
   assert.equal(await detail.locator('.g2-detail-reference-boundary').count(),1);
   await detail.locator('.g2-detail-reference-boundary summary').click();
   assert((await detail.innerText()).includes('正常値・安全値'));
  }
+ await page.locator('.modal-S06 .modal-body').evaluate(el=>{el.scrollTop=0;});
  await page.screenshot({path:'audit/v049_detail/'+label+'_S06_detail.png',fullPage:true,animations:'disabled'});
  const metrics=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert(metrics.scrollWidth<=width+1);assert.equal(jsErrors.length,0);
  passed.push({label,metrics});
