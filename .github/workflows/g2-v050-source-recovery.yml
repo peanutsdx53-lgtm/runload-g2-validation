@@ -216,6 +216,21 @@ jobs:
         run: |
           cp ../tests/g2-v049-direct-detail.mjs tests/
           node tests/g2-v049-direct-detail.mjs
+      - name: Collect byte-identical old PC display-source references
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          root=Path('/tmp/runload-old-v039')
+          assert root.is_dir()
+          with zipfile.ZipFile('/tmp/old-pc-display-source.zip','w',zipfile.ZIP_DEFLATED) as z:
+            for group in ('screens','styles','ui'):
+              for p in sorted((root/group).rglob('*')):
+                if p.is_file() and p.suffix in ('.js','.css'):
+                  z.write(p,p.relative_to(root).as_posix())
+          PY
+          sha256sum /tmp/old-pc-display-source.zip
       - name: Archive exact verified V049 source (excluding install dependencies and browser images)
         if: always()
         run: |
@@ -237,6 +252,7 @@ jobs:
           name: g2-v050-v049-source-recovery
           path: |
             /tmp/g2-v049-source.zip
+            /tmp/old-pc-display-source.zip
             candidate/audit/v040_home_layout_metrics.json
             candidate/audit/v049_detail.json
             candidate/audit/v049_detail/
