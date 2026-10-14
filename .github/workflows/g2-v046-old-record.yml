@@ -1,0 +1,188 @@
+name: G2 V046 Literal Old PC Record
+
+on:
+  push:
+    branches: [uiux-direct-old-pc-s02-v046]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-skin:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reconstruct V0.37 accepted source
+        run: |
+          cat validation/payload_*.b64 | base64 --decode > /tmp/g2-base.zip
+          echo '1ebef06e0cab3d5423b161b0f1d1183b51495662599093e3cf2baffb38a2df1c  /tmp/g2-base.zip' | sha256sum --check -
+          mkdir -p candidate
+          unzip -q /tmp/g2-base.zip -d candidate
+          base64 --decode validation/g2-v020-preui.patch.gz.b64 | gzip -dc | patch -p1 -d candidate
+          cp tests/g2-final-protective-boundaries.test.mjs candidate/tests/
+          for v in 029 030 031 032 033 034 035; do
+            base64 --decode "validation/g2-v$v-delta.patch.gz.b64" | gzip -dc | patch -p1 -d candidate
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('candidate/js/ui/views.js')
+          a="return Stack(Input('用語を検索（任意）'"
+          b="return Stack(P('用語：参考100（同じ指標の基準条件との比）、A1（原著掲載値）、A2（原著の式）、B（原著点間の区分線形補間）。'),P('取得時刻：走行前後の疲労は取得時刻の条件が成立した場合に限り差を表示します。'),Input('用語を検索（任意）'"
+          s=p.read_text()
+          assert s.count(a)==1
+          p.write_text(s.replace(a,b))
+          PY
+      - name: Freeze engine domain data storage action module checksums
+        run: |
+          cd candidate
+          find js/app js/domain js/engines js/research js/storage -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/engine_before.sha
+          sha256sum js/ui/actions.js js/ui/share-view.js > /tmp/actions_before.sha
+      - name: Apply unchanged G2 V038 presentation base
+        run: |
+          base64 --decode validation/g2-v038-ui-only.patch.gz.b64 | gzip -dc | patch -p1 -d candidate
+          base64 --decode validation/g2-v038-legacy-skin.css.gz.b64 | gzip -dc > candidate/styles/legacy-skin.css
+          cd candidate
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          node --check js/ui/views.js
+          grep -q 'legacy-skin.css' index.html
+      - name: Port exact old silhouette and original ROF-J PNG files
+        run: |
+          git clone --depth=1 https://github.com/peanutsdx53-lgtm/runload-app.git /tmp/runload-old-v039
+          test "$(git -C /tmp/runload-old-v039 rev-parse HEAD)" = "ff7bb4a96abb296fe6a4b1d8e3f98e8b4f1f46e7"
+          mkdir -p candidate/assets/rof
+          cp /tmp/runload-old-v039/assets/rof/rof-visual-*.png candidate/assets/rof/
+          cp /tmp/runload-old-v039/assets/rof/README.md candidate/assets/rof/
+          cp /tmp/runload-old-v039/ui/bodyRegionVisuals.js candidate/js/ui/old-body-silhouettes.js
+          base64 --decode validation/g2-v039-original-assets-presentation.patch.gz.b64 | gzip -dc | patch -p1 -d candidate
+          cd candidate
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          node --check js/ui/views.js
+          node --check js/ui/old-body-silhouettes.js
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          a=Path('assets/rof'); source=Path('/tmp/runload-old-v039/assets/rof')
+          images=sorted(a.glob('rof-visual-*.png'))
+          assert len(images)==5
+          assert all(f.read_bytes()==(source/f.name).read_bytes() for f in images)
+          print('FIVE ORIGINAL ROF PNG FILES BYTE IDENTICAL')
+          PY
+      - name: Apply only S01 home display adaptation
+        run: |
+          base64 --decode validation/g2-v040-home-pc-mobile.patch.gz.b64 | gzip -dc | patch -p1 -d candidate
+          cd candidate
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          node --check js/ui/views.js
+      - name: Apply S02 old record form without touching engine
+        run: |
+          base64 --decode validation/g2-v041-legacy-record.patch.gz.b64 | gzip -dc | patch -p1 -d candidate
+          cd candidate
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          node --check js/ui/views.js
+      - name: Apply extracted historical PC S05 result and verify science protection
+        run: |
+          base64 --decode validation/g2-v044-pc-result.patch.gz.b64 | gzip -dc | patch --batch -p2 -d candidate
+          cd candidate
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          node --check js/ui/views.js
+          node --check js/ui/legacy-pc-result.js
+          grep -q 'legacy-pc-result.css' index.html
+      - name: Overlay original old PC home source and display compatibility layer
+        run: |
+          base64 --decode validation/v045-direct-original-home-overlay.zip.b64 >/tmp/v045-oldhome-overlay.zip
+          echo '5b16b10b4cd4d89e2b7baef97b0e04203ae9af1def874293263a413faa3cee1f  /tmp/v045-oldhome-overlay.zip' | sha256sum --check -
+          unzip -oq /tmp/v045-oldhome-overlay.zip -d candidate
+          cd candidate
+          echo '4ea33191be63414bdaca0c45e0c581562ac069710657f89ae2dda8c931e4d14d  js/ui/legacy/homeScreen.original.js' | sha256sum --check -
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          cmp js/ui/legacy/homeScreen.original.js /tmp/runload-old-v039/screens/desktop/homeScreen.js
+          cmp js/ui/legacy/desktopHomeWorkspace.original.js /tmp/runload-old-v039/ui/desktopHomeWorkspace.js
+          cmp styles/old-original-desktop-home-layout.css /tmp/runload-old-v039/styles/desktop-home-layout.css
+          node --check js/ui/legacy/homeScreen.js
+          node --check js/ui/legacy/homeEntry.js
+          node --check js/ui/views.js
+      - name: Overlay literal original PC record renderer and G2 display adapter
+        run: |
+          base64 --decode validation/v046-literal-old-record-overlay.zip.b64 >/tmp/v046-original-record.zip
+          echo '1540f9e3690fc4d0a7e50af2f45fa0fb24a067cae738b3b053557b355b83447c  /tmp/v046-original-record.zip' | sha256sum --check -
+          unzip -oq /tmp/v046-original-record.zip -d candidate
+          cd candidate
+          cmp js/ui/legacy/desktopRecordInput.original.js /tmp/runload-old-v039/screens/desktop/recordInputScreen.js
+          cmp js/ui/legacy/recordInputScreen.original.js /tmp/runload-old-v039/screens/recordInputScreen.js
+          cmp styles/old-record-base-original.css /tmp/runload-old-v039/styles/record-screen-base.css
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          node --check js/ui/legacy/recordEntry.js
+          node --check js/ui/views.js
+      - name: Run baseline Node regression
+        working-directory: candidate
+        run: npm test
+      - name: Install real-browser test dependencies
+        working-directory: candidate
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start real app for browser tests
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory candidate > /tmp/v038-server.log 2>&1 &
+          for n in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/v038-server.log
+          exit 1
+      - name: Browser functional visual layout gates
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+        run: |
+          cp ../tests/g2-v038-skin-browser.mjs tests/
+          node tests/g2-v038-skin-browser.mjs
+      - name: Check literal old PC home source across desktop widths
+        working-directory: candidate
+        run: |
+          cp ../tests/g2-v045-original-home.mjs tests/
+          node tests/g2-v045-original-home.mjs
+      - name: Verify direct-copy PC record DOM using actual Chromium
+        working-directory: candidate
+        run: |
+          cp ../tests/g2-v046-original-record.mjs tests/
+          node tests/g2-v046-original-record.mjs
+      - name: Upload native evidence on failures or success
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: g2-v046-direct-old-pc-record
+          path: |
+            candidate/audit/v040_home_layout_metrics.json
+            candidate/audit/v046_record_browser.json
+            candidate/audit/v046_record/
+            candidate/audit/V046_ORIGINAL_SOURCE_MANIFEST.json
+            candidate/audit/v045_direct_original_home.json
+            candidate/audit/v045_original_home_*.png
+            candidate/audit/v044_pc_result/
+            candidate/audit/v044_pc_result.json
+            candidate/audit/v041_record/
+            candidate/audit/v041_record_metrics.json
+            candidate/audit/v040_home/
+            candidate/audit/uiux_v038_skin_browser_checks.json
+            candidate/audit/uiux_v039_original_visuals_browser_checks.json
+            candidate/assets/rof/README.md
+            candidate/audit/uiux_v037_baseline/
+            candidate/audit/uiux_v037_baseline.json
+            /tmp/engine_before.sha
+            /tmp/actions_before.sha
+            /tmp/v038-server.log
+          retention-days: 14
+          if-no-files-found: warn
