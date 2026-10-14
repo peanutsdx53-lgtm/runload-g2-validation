@@ -1,0 +1,79 @@
+name: RunLoad G2 V037 UIUX Visual Baseline
+
+on:
+  push:
+    branches: [uiux-visual-baseline-v037]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout visual-test-only branch
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reassemble existing candidate and check base hash
+        run: |
+          cat validation/payload_*.b64 | base64 --decode > /tmp/g2-base.zip
+          echo '1ebef06e0cab3d5423b161b0f1d1183b51495662599093e3cf2baffb38a2df1c  /tmp/g2-base.zip' | sha256sum --check -
+          mkdir -p candidate
+          unzip -q /tmp/g2-base.zip -d candidate
+          test -f candidate/index.html
+      - name: Reconstruct already accepted V0.37 product without UI edits
+        run: |
+          base64 --decode validation/g2-v020-preui.patch.gz.b64 | gzip -dc | patch -p1 -d candidate
+          cp tests/g2-final-protective-boundaries.test.mjs candidate/tests/
+          for v in 029 030 031 032 033 034 035; do
+            base64 --decode "validation/g2-v$v-delta.patch.gz.b64" | gzip -dc | patch -p1 -d candidate
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('candidate/js/ui/views.js')
+          a="return Stack(Input('用語を検索（任意）'"
+          b="return Stack(P('用語：参考100（同じ指標の基準条件との比）、A1（原著掲載値）、A2（原著の式）、B（原著点間の区分線形補間）。'),P('取得時刻：走行前後の疲労は取得時刻の条件が成立した場合に限り差を表示します。'),Input('用語を検索（任意）'"
+          s=p.read_text()
+          assert s.count(a)==1
+          p.write_text(s.replace(a,b))
+          PY
+      - name: Run Node regression before recording screenshots
+        working-directory: candidate
+        run: npm test
+      - name: Install Chromium for isolated visual capture
+        working-directory: candidate
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory candidate > /tmp/g2-uiux-server.log 2>&1 &
+          for n in $(seq 1 25); do
+            if curl -fsS http://127.0.0.1:4173/index.html > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/g2-uiux-server.log
+          exit 1
+      - name: Capture original PC mobile and tablet screenshots
+        working-directory: candidate
+        env:
+          RUNLOAD_TEST_URL: http://127.0.0.1:4173
+        run: |
+          cp ../tests/g2-uiux-capture.mjs tests/
+          node tests/g2-uiux-capture.mjs
+      - name: Keep visual evidence including partial failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: g2-v037-uiux-visual-baseline
+          path: |
+            candidate/audit/uiux_v037_baseline/
+            candidate/audit/uiux_v037_baseline.json
+            /tmp/g2-uiux-server.log
+          if-no-files-found: warn
+          retention-days: 14
