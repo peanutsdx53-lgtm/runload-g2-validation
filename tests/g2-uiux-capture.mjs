@@ -27,7 +27,7 @@ for(const [name,width,height] of [['pc1440',1440,900],['phone390',390,844],['pho
   await page.locator('#field-durationMinutes').fill('30');
   await page.locator('[data-action="confirm-save"]').click();await page.locator('[role=dialog]').waitFor();await shot('S04_confirm');
   await page.locator('[data-action="commit-record"]').click();await page.locator('[role=dialog]').waitFor({state:'detached'});await shot('S05_result');
-  await page.locator('[data-action="open-region"]').click();await page.locator('[role=dialog]').waitFor();await shot('S06_detail');
+  await page.locator('[data-action="open-region"]:visible').first().click();await page.locator('[role=dialog]').waitFor();await shot('S06_detail');
   await page.keyboard.press('Escape');await page.locator('[role=dialog]').waitFor({state:'detached'});
   await nav('S07');await shot('S07_history');
   await nav('S05');await page.locator('[data-action="new-record"]').click();await page.locator('#field-recordDate').fill('2026-10-08');
