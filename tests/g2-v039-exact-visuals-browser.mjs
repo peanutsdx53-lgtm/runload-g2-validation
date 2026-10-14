@@ -38,6 +38,19 @@ for(const [device,width,height] of [['pc1440',1440,900],['phone390',390,844],['p
   await page.locator('[data-action="confirm-save"]').click();
   await page.locator('[data-action="commit-record"]').click();
   await page.locator('[role=dialog]').waitFor({state:'detached'});
+  if(width>=1100){
+    const views=page.locator('.pc-result-body-map .body-view');
+    assert.equal(await views.count(),3);
+    for(const [index,v,expected] of [
+      [0,'front',['R01','R03','R05','R06','R08']],
+      [1,'back',['R02','R04','R07','R09']],
+      [2,'sole',['R12','R11','R10']]
+    ]){
+      const ids=await views.nth(index).locator('.body-region-selector').evaluateAll(nodes=>nodes.map(x=>x.getAttribute('data-id')));
+      assert.deepEqual(ids,expected,'Same historical silhouette with G2 anatomical IDs: '+v);
+      log('Original desktop silhouette '+v,{visibleRegions:ids});
+    }
+  }else{
   for(const [v,count] of [['front',5],['back',4],['sole',3]]){
    await page.locator('[data-action="figure-view"][data-id="'+v+'"]').click();
    const ids=await page.locator('.body-region-selector').evaluateAll(nodes=>nodes.map(x=>x.getAttribute('data-id')));
@@ -49,16 +62,17 @@ for(const [device,width,height] of [['pc1440',1440,900],['phone390',390,844],['p
    log('Old silhouette '+v,{visibleRegions:ids});
   }
   await page.locator('[data-action="figure-view"][data-id="front"]').click();
+  }
   const points=page.locator('.body-region-selector');
   await points.nth(0).focus();
   await page.keyboard.press('Enter');
   assert.equal(await page.locator('.body-region-selector[aria-pressed=true]').count(),1);
   log('Silhouette has actual keyboard-operable region selector');
-  assert.equal(await page.locator('.region-list [data-action="select-region"]').count(),12);
+  assert.equal(await page.locator(width>=1100?'.pc-region-matrix .pc-region-tile':'.region-list [data-action="select-region"]').count(),12);
   const widths=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,mainScrollWidth:document.querySelector('#main-content')?.scrollWidth}));
   assert(widths.documentWidth<=width+1,'horizontal overflow '+JSON.stringify(widths));
   log('All twelve results and no horizontal overflow',widths);
-  await page.locator('[data-action="open-region"]').click();
+  await page.locator('[data-action="open-region"]:visible').first().click();
   await page.locator('[role=dialog]').waitFor();
   const original=await page.locator('.modal-body').innerText();
   assert(original.includes('参考比'));
