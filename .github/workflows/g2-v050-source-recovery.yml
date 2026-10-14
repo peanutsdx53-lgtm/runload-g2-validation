@@ -167,6 +167,19 @@ jobs:
           node --check js/ui/legacy/bodyPartDetail.js
           node --check js/ui/legacy/desktopBodyDetail.js
           node --check js/ui/views.js
+      - name: Apply verified V050 old PC S08 and S09 presentation overlay
+        run: |
+          base64 --decode validation/v050-s08s09-display-overlay.zip.b64 > /tmp/g2-v050-overlay.zip
+          echo 'cb0852f92ec6e8a29bc5f9cdf3258fe9b100e7302bafe22abbcbf2f500c6209e  /tmp/g2-v050-overlay.zip' | sha256sum --check -
+          unzip -oq /tmp/g2-v050-overlay.zip -d candidate
+          cd candidate
+          sha256sum --check /tmp/engine_before.sha
+          sha256sum --check /tmp/actions_before.sha
+          node --check js/ui/views.js
+          node --check js/ui/legacy/readingColumnEntry.js
+          node --check js/ui/legacy/speedCompareEntry.js
+          cmp js/ui/legacy/readingScreen.original.js /tmp/runload-old-v039/screens/readingScreen.js
+          cmp js/ui/legacy/simulationScreen.original.js /tmp/runload-old-v039/screens/simulationScreen.js
       - name: Run baseline Node regression
         working-directory: candidate
         run: npm test
@@ -216,6 +229,59 @@ jobs:
         run: |
           cp ../tests/g2-v049-direct-detail.mjs tests/
           node tests/g2-v049-direct-detail.mjs
+      - name: Chromium PC S08 reference article and S09 virtual speed comparison
+        working-directory: candidate
+        run: |
+          mkdir -p audit/v050_pc
+          node --input-type=module <<'JS'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs/promises';
+          const browser=await chromium.launch(),results=[];
+          for(const width of [1100,1280,1440]){
+            const ctx=await browser.newContext({viewport:{width,height:900},locale:'ja-JP'}),page=await ctx.newPage(),errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            try{
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+              await page.locator('.sidebar [data-id="S02"]').click();
+              await page.locator('#field-recordDate').fill('2026-10-10');
+              await page.locator('#field-distanceKm').fill('5');
+              await page.locator('#field-durationMinutes').fill('30');
+              await page.locator('[data-action=confirm-save]').click();
+              await page.locator('[data-action=commit-record]').click();
+              await page.locator('.modal-S04').waitFor({state:'detached'});
+              await page.locator('[data-action="open-region"]:visible').first().click();
+              await page.locator('.modal-S06').waitFor();
+              const link=page.locator('.modal-S06 [data-action=open-column]').first();
+              assert.equal(await link.count(),1);
+              await link.click();
+              await page.locator('.modal-S08').waitFor();
+              assert.equal(await page.locator('.g2-old-reading-source .reading-detail--page').count(),1);
+              assert((await page.locator('.modal-S08').innerText()).includes('出典元'));
+              await page.screenshot({path:'audit/v050_pc/'+width+'_S08.png',animations:'disabled'});
+              await page.locator('.modal-S08 [data-action=close-modal]').first().click();
+              await page.locator('.modal-S06').waitFor();
+              await page.evaluate(()=>{const b=document.createElement('button');b.dataset.action='open-simulation';document.querySelector('.modal-body').append(b);b.click()});
+              await page.locator('.modal-S09').waitFor();
+              assert.equal(await page.locator('.g2-old-simulation-source').count(),1);
+              await page.locator('#field-virtualA').fill('9');
+              await page.locator('#field-virtualB').fill('10');
+              await page.locator('[data-action=calculate-virtual]').click();
+              const output=await page.locator('#virtual-output').innerText();
+              assert(output.includes('速度A')&&output.includes('速度B'));
+              await page.screenshot({path:'audit/v050_pc/'+width+'_S09.png',animations:'disabled'});
+              const docWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
+              assert(docWidth<=width+1,'page overflow: '+docWidth);
+              assert.equal(errors.length,0,'JS exceptions: '+errors.join(','));
+              results.push({width,status:'PASS',docWidth});
+            } catch(e){results.push({width,status:'FAIL',error:String(e.stack||e)});}
+            await ctx.close();
+          }
+          await browser.close();
+          await fs.writeFile('audit/v050_browser.json',JSON.stringify(results,null,2));
+          console.log('V050',JSON.stringify(results));
+          assert(results.every(x=>x.status==='PASS'));
+          JS
       - name: Collect byte-identical old PC display-source references
         if: always()
         run: |
@@ -255,6 +321,8 @@ jobs:
             /tmp/old-pc-display-source.zip
             candidate/audit/v040_home_layout_metrics.json
             candidate/audit/v049_detail.json
+            candidate/audit/v050_browser.json
+            candidate/audit/v050_pc/
             candidate/audit/v049_detail/
             candidate/audit/V049_OLD_REGION_DETAIL_MANIFEST.json
             candidate/audit/v048_result.json
