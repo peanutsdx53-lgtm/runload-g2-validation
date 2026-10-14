@@ -26,7 +26,7 @@ for(const [name,width,height] of [['pc1440',1440,900],['pc1280',1280,800],['phon
    await page.locator('.pc-history-original-source [data-field="historyRegion"]').waitFor();
    assert.equal(await page.locator('.pc-history-original-source [data-field="historyMode"]').count(),1);
    const input=page.locator('.pc-history-original-source #history-record-filter-form input[name="query"]');
-   await input.fill('987654');assert.equal(await page.locator('.pc-history-original-source .record-item:visible').count(),0);
+   await input.fill('987654');const debug=await page.locator('.pc-history-original-source').evaluate(e=>({field:e.querySelector('input[name=query]')?.value,rows:[...e.querySelectorAll('.record-item')].map(r=>({hidden:r.hidden,style:r.getAttribute('style'),display:getComputedStyle(r).display,text:r.innerText.slice(0,200)}))}));console.log(name,'FILTER_DEBUG',JSON.stringify(debug));assert.equal(await page.locator('.pc-history-original-source .record-item:visible').count(),0);
    await input.fill('2026');assert.equal(await page.locator('.pc-history-original-source .record-item:visible').count(),1);
    await page.screenshot({path:'audit/v047_history/'+name+'_S07_saved.png',fullPage:true,animations:'disabled'});
    await page.locator('.pc-history-original-source [data-action="open-record"]').click();
