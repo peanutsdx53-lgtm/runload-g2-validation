@@ -1,0 +1,50 @@
+name: RunLoad Legacy UI Visual Reference
+
+on:
+  push:
+    branches: [uiux-visual-baseline-v037]
+    paths:
+      - 'tests/g2-legacy-ui-reference.mjs'
+      - '.github/workflows/g2-legacy-ui-reference.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch old app as read-only UI reference
+        run: git clone --depth=1 https://github.com/peanutsdx53-lgtm/runload-app.git legacy
+      - name: Install Chromium for screenshots
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Serve legacy app locally
+        run: |
+          python3 -m http.server 4175 --bind 127.0.0.1 --directory legacy > /tmp/legacy-ui-server.log 2>&1 &
+          for n in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4175/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/legacy-ui-server.log
+          exit 1
+      - name: Capture legacy PC and mobile layouts
+        run: node tests/g2-legacy-ui-reference.mjs
+      - name: Preserve screenshots and metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runload-legacy-ui-reference
+          path: |
+            audit/legacy_ui_reference/
+            audit/legacy_ui_reference.json
+            /tmp/legacy-ui-server.log
+          if-no-files-found: warn
+          retention-days: 14
