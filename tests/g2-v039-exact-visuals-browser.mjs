@@ -32,7 +32,7 @@ for(const [device,width,height] of [['pc1440',1440,900],['phone390',390,844],['p
   log('ROF-J five unaltered assets, anchored illustrations and selectable 0');
   await page.keyboard.press('Escape');
   await page.locator('[role=dialog]').waitFor({state:'detached'});
-  await nav('S02');
+  if(width>=1100)await nav('S02');
   await page.locator('#field-recordDate').fill('2026-10-10');
   await page.locator('#field-distanceKm').fill('5');
   await page.locator('#field-durationMinutes').fill('30');
