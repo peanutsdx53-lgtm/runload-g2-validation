@@ -23,7 +23,7 @@ for(const [label,width,height] of [['PC',1440,900],['mobile',390,844],['narrow',
   await page.locator('#main-content h1').waitFor();
   await check('S01');
   const nav=async id=>{
-   if(width>=1100)return page.locator('.sidebar [data-id="'+id+'"]').click();
+   if(width>=1100){if(['S10','S14'].includes(id)){await page.locator('.header-actions [data-action="open-more"]').click();return page.locator('#desktop-more-navigation [data-id="'+id+'"]').click();}return page.locator('.sidebar [data-id="'+id+'"]').click();}
    if(['S10','S14'].includes(id)){await page.locator('.footer-nav [data-action="open-more"]').click();return page.locator('.footer-nav #more-navigation [data-id="'+id+'"]').click();}
    return page.locator('.footer-nav [data-id="'+id+'"]').click();
   };
