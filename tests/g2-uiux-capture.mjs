@@ -29,7 +29,14 @@ for(const [name,width,height] of [['pc1440',1440,900],['phone390',390,844],['pho
   await page.locator('[data-action="commit-record"]').click();await page.locator('[role=dialog]').waitFor({state:'detached'});await shot('S05_result');
   await page.locator('[data-action="open-region"]').click();await page.locator('[role=dialog]').waitFor();await shot('S06_detail');
   await page.keyboard.press('Escape');await page.locator('[role=dialog]').waitFor({state:'detached'});
-  await nav('S07');await shot('S07_history');await nav('S10');await shot('S10_reflect');await nav('S14');await shot('S14_data');
+  await nav('S07');await shot('S07_history');
+  await nav('S02');await page.locator('#field-recordDate').fill('2026-10-08');
+  await page.locator('#field-distanceKm').fill('4');
+  await page.locator('#field-durationMinutes').fill('28');
+  await page.locator('[data-action="confirm-save"]').click();await page.locator('[data-action="commit-record"]').click();
+  await page.locator('[role=dialog]').waitFor({state:'detached'});
+  await nav('S07');await shot('S07_history_2');
+  await nav('S10');await shot('S10_reflect');await nav('S14');await shot('S14_data');
   await page.locator('[data-action="open-data-modal"]').click();await page.locator('[role=dialog]').waitFor();await shot('S15_data_modal');
   await page.keyboard.press('Escape');await page.locator('[role=dialog]').waitFor({state:'detached'});
   await nav('S01');await shot('S01_saved');await page.locator('[data-action="open-fatigue"]').click();await page.locator('[role=dialog]').waitFor();await shot('S03_fatigue');
