@@ -43,6 +43,8 @@ for(const [device,width,height] of [['pc1440',1440,900],['phone390',390,844],['p
    const ids=await page.locator('.body-region-selector').evaluateAll(nodes=>nodes.map(x=>x.getAttribute('data-id')));
    assert.equal(ids.length,count,'Mismatched selectable old-app silhouettes for '+v);
    assert.equal(new Set(ids).size,count);
+   const expected={front:['R01','R03','R05','R06','R08'],back:['R02','R04','R07','R09'],sole:['R12','R11','R10']}[v];
+   assert.deepEqual(ids,expected,'Map label to old silhouette must preserve anatomical location');
    assert.equal(await page.locator('.legacy-body-silhouette .body-silhouette-base path').count(),1);
    log('Old silhouette '+v,{visibleRegions:ids});
   }
