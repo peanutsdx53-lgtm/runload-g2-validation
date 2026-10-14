@@ -10,7 +10,7 @@ for(const [name,width,height] of [['pc1440',1440,900],['phone390',390,844],['pho
  async function shot(state){
   await page.locator('#main-content h1:visible').waitFor();await page.waitForTimeout(70);
   const file=name+'_'+state+'.png',p=dir+'/'+file;await page.screenshot({path:p,fullPage:true,animations:'disabled'});
-  const metrics=await page.evaluate(()=>({title:document.querySelector('#main-content .screen h1')??document.querySelector('#main-content h1')?.textContent,dialog:document.querySelector('[role=dialog] h2')?.textContent??null,viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,mainScrollWidth:document.querySelector('#main-content')?.scrollWidth}));
+  const metrics=await page.evaluate(()=>({title:(document.querySelector('#main-content .screen h1')??document.querySelector('#main-content h1'))?.textContent,dialog:document.querySelector('[role=dialog] h2')?.textContent??null,viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,mainScrollWidth:document.querySelector('#main-content')?.scrollWidth}));
   records.push({name,width,height,state,file,sha256:crypto.createHash('sha256').update(await fs.readFile(p)).digest('hex'),metrics});
   console.log(name,state,JSON.stringify(metrics));
  }
