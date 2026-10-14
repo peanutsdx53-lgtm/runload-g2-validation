@@ -40,7 +40,7 @@ for(const [label,width,height] of [['PC',1440,900],['mobile',390,844],['narrow',
   await page.locator('[role=dialog]').waitFor({state:'detached'});
   await check('S05');
   assert.equal(await page.locator(width>=1100?'.pc-region-matrix .pc-region-tile':'.region-list [data-action="select-region"]').count(),12);
-  await page.locator('[data-action="open-region"]').click();
+  await page.locator('[data-action="open-region"]:visible').first().click();
   await page.locator('[role=dialog]').waitFor();
   await check('S06');
   await page.keyboard.press('Escape');
