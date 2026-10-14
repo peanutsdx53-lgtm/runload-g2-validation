@@ -124,6 +124,11 @@ jobs:
         run: |
           cp ../tests/g2-v040-home-layout.mjs tests/
           node tests/g2-v040-home-layout.mjs
+      - name: Verify five S02 layouts and screenshot them
+        working-directory: candidate
+        run: |
+          cp ../tests/g2-v041-record-layout.mjs tests/
+          node tests/g2-v041-record-layout.mjs
       - name: Capture unmodified browser screenshots
         working-directory: candidate
         env:
@@ -139,6 +144,7 @@ jobs:
           path: |
             candidate/audit/v040_home_layout_metrics.json
             candidate/audit/v041_record/
+            candidate/audit/v041_record_metrics.json
             candidate/audit/v040_home/
             candidate/audit/uiux_v038_skin_browser_checks.json
             candidate/audit/uiux_v039_original_visuals_browser_checks.json
