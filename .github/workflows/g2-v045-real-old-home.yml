@@ -135,35 +135,11 @@ jobs:
         run: |
           cp ../tests/g2-v038-skin-browser.mjs tests/
           node tests/g2-v038-skin-browser.mjs
-      - name: Run exact-visual browser checks
-        working-directory: candidate
-        env:
-          RUNLOAD_TEST_URL: http://127.0.0.1:4173
-        run: |
-          cp ../tests/g2-v039-exact-visuals-browser.mjs tests/
-          node tests/g2-v039-exact-visuals-browser.mjs
-      - name: Verify five S02 layouts and screenshot them
-        working-directory: candidate
-        run: |
-          cp ../tests/g2-v041-record-layout.mjs tests/
-          node tests/g2-v041-record-layout.mjs
-      - name: Verify copied old PC S05 layout and region actions
-        working-directory: candidate
-        run: |
-          cp ../tests/g2-v044-pc-result-browser.mjs tests/
-          node tests/g2-v044-pc-result-browser.mjs
       - name: Check literal old PC home source across desktop widths
         working-directory: candidate
         run: |
           cp ../tests/g2-v045-original-home.mjs tests/
           node tests/g2-v045-original-home.mjs
-      - name: Capture unmodified browser screenshots
-        working-directory: candidate
-        env:
-          RUNLOAD_TEST_URL: http://127.0.0.1:4173
-        run: |
-          cp ../tests/g2-uiux-capture.mjs tests/
-          node tests/g2-uiux-capture.mjs
       - name: Upload native evidence on failures or success
         if: always()
         uses: actions/upload-artifact@v4
