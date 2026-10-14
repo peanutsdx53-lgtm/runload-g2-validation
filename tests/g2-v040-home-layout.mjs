@@ -17,6 +17,7 @@ for (const [name,width,height] of viewports) {
      text:document.querySelector('.screen-S01')?.innerText??'',font:getComputedStyle(document.querySelector('.home-hero')).fontFamily,canNavigate:!!document.querySelector('[data-action="new-record"]')};
   });
   if(stats.width>width+1)throw Error('horizontal overflow: '+JSON.stringify(stats));
+  if(!stats.text.includes(width>=1100?'保存後に結果と履歴を確認できます':'はじめての記録を残す'))throw Error('Home title is missing from visible DOM: '+stats.text.slice(0,300));
   if(!stats.canNavigate||stats.text.includes('RunLoad')||stats.text.includes('チャレンジ')||stats.text.includes('実績'))throw Error('Home missing expected action or contains excluded feature');
   if(stats.links.length!==4)throw Error('Old desktop navigation count !=4');
   if(width>=1100){
