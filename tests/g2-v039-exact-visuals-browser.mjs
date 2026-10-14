@@ -16,7 +16,7 @@ for(const [device,width,height] of [['pc1440',1440,900],['phone390',390,844],['p
  try{
   await page.goto(base+'/index.html',{waitUntil:'domcontentloaded'});
   await page.locator('#main-content h1').waitFor();
-  if(width>=1100)await page.locator('.sidebar [data-id="S02"]').click();
+  if(width>=1100){await page.locator('.sidebar [data-id="S02"]').click();await page.locator('.old-record-step').filter({hasText:'身体・走ったときの記録'}).locator('summary').click();}
   await page.locator('[data-action="open-fatigue"]:visible').first().click();
   await page.locator('.modal-S03').waitFor();
   assert.equal(await page.locator('.rof-j-original-anchor').count(),5);
