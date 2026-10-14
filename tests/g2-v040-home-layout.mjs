@@ -21,7 +21,7 @@ for (const [name,width,height] of viewports) {
   if(stats.links.length!==4)throw Error('Old desktop navigation count !=4');
   if(width>=1100){
     if(Math.abs(stats.hero.x-152)>9||Math.abs(stats.hero.y-225)>30||Math.abs(stats.hero.h-272)>18)throw Error('Desktop hero too far from old-app measured layout: '+JSON.stringify(stats.hero));
-    if(Math.abs(stats.rail.x-1014)>95||Math.abs(stats.rail.y-stats.hero.y)>3)throw Error('Desktop rail misaligned: '+JSON.stringify(stats.rail));
+    if(Math.abs(stats.rail.x-(stats.hero.x+stats.hero.w+22))>10||Math.abs(stats.rail.y-stats.hero.y)>3)throw Error('Desktop rail misaligned: '+JSON.stringify(stats.rail));
     if(Math.abs(stats.shortcuts.y-613)>48)throw Error('Desktop shortcuts off old-app grid: '+JSON.stringify(stats.shortcuts));
   }
   await page.screenshot({path:`${out}/${name}_S01_empty.png`,fullPage:true,animations:'disabled'});
