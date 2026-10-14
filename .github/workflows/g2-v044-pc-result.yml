@@ -90,7 +90,7 @@ jobs:
           node --check js/ui/views.js
       - name: Apply extracted historical PC S05 result and verify science protection
         run: |
-          base64 --decode validation/g2-v044-pc-result.patch.gz.b64 | gzip -dc | patch -p1 -d candidate
+          base64 --decode validation/g2-v044-pc-result.patch.gz.b64 | gzip -dc | patch --batch -p2 -d candidate
           cd candidate
           sha256sum --check /tmp/engine_before.sha
           sha256sum --check /tmp/actions_before.sha
